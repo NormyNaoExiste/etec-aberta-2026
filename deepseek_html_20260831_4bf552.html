@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estúdio · Oficina de estudos</title>
+  <style>
+    :root{
+      --bg:#F4F0DE;
+      --surface:#FFFDF4;
+      --ink:#294542;
+      --ink-soft:#65736D;
+      --accent:#F3AE58;
+      --mint:#BCE8DD;
+      --mint-strong:#39BFA9;
+      --warn:#D98255;
+      --line:#79D3C1;
+      --display: Georgia, 'Times New Roman', serif;
+      --body: Arial, Helvetica, sans-serif;
+      --mono:'Courier New', monospace;
+      --radius:2px;
+    }
+    html, body{
+      margin:0;
+      background:#F4F0DE;
+    }
+    #app{
+      position:relative;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:var(--body);
+      min-height:600px;
+      border-radius:0;
+      overflow:hidden;
+    }
+    #app::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      opacity:.45;
+      background:
+        linear-gradient(90deg, transparent 0 3%, rgba(188,232,221,.55) 3% 5%, transparent 5% 100%);
+    }
+    .switcher{
+      position:relative;
+      z-index:2;
+      display:flex;
+      gap:0;
+      flex-wrap:wrap;
+      background:#F4F0DE;
+      padding:15px 28px 10px;
+      border-bottom:1px solid var(--mint-strong);
+    }
+    .switcher button{
+      flex:0 1 auto;
+      min-width:0;
+      padding:7px 13px;
+      margin-right:5px;
+      background:transparent;
+      border:0;
+      border-radius:0;
+      color:#66716D;
+      font-family:var(--body);
+      font-size:11px;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .switcher button::after{
+      content:'';
+      display:block;
+      height:1px;
+      width:0;
+      margin:5px auto 0;
+      background:var(--accent);
+      transition:.2s ease;
+    }
+    .switcher button.active{
+      background:transparent;
+      color:var(--ink);
+      font-weight:600;
+    }
+    .switcher button.active::after,
+    .switcher button:hover::after{
+      width:100%;
+    }
+    .switcher button:hover:not(.active){
+      color:var(--ink);
+    }
+    .stage{
+      position:relative;
+      z-index:1;
+      padding:46px 48px 54px;
+      background:
+        radial-gradient(circle at 91% 12%, rgba(188,232,221,.65) 0 58px, transparent 59px),
+        radial-gradient(circle at 9% 92%, rgba(243,174,88,.16) 0 72px, transparent 73px),
+        var(--bg);
+    }
+    h1,h2,h3{
+      font-weight:400;
+    }
+    .hidden{display:none!important;}
+    .masthead{
+      border-bottom:1px solid var(--mint-strong);
+      padding-bottom:14px;
+      margin-bottom:28px;
+    }
+    .masthead h1,
+    .t-diario .masthead h1,
+    .t-oficina h1,
+    .t-clima .masthead h1,
+    .t-herbario .masthead h1,
+    .t-radio .masthead h1,
+    .t-confeitaria .masthead h1{
+      font-family:var(--display);
+      font-style:normal;
+      font-weight:400;
+      color:var(--ink);
+      letter-spacing:.2px;
+    }
+    .masthead h1::before{
+      content:'✦ ';
+      color:var(--accent);
+      font-family:Arial,sans-serif;
+      font-size:.55em;
+      vertical-align:middle;
+    }
+    .coord,.data,.sub,.freq,.registro,.rodape,
+    .t-diario .porto .hora,
+    .t-oficina .peca .cod,
+    .t-oficina .peca .pct{
+      color:var(--ink-soft);
+    }
+    /* ---------- OFICINA (com cards dinâmicos) ---------- */
+    .t-oficina .stage{
+      background:
+        radial-gradient(circle at 91% 12%, rgba(188,232,221,.65) 0 58px, transparent 59px),
+        radial-gradient(circle at 9% 92%, rgba(243,174,88,.16) 0 72px, transparent 73px),
+        var(--bg);
+    }
+    .t-oficina .bancada{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-bottom:20px;
+    }
+    .t-oficina .peca{
+      background:rgba(255,253,244,.82);
+      border:1px solid var(--mint-strong);
+      padding:17px;
+      box-shadow:3px 3px 0 rgba(188,232,221,.7);
+      transition:0.1s;
+    }
+    .t-oficina .peca h3{
+      font-family:var(--display);
+      font-weight:400;
+      font-size:17px;
+      color:var(--ink);
+      margin:6px 0 8px;
+    }
+    .t-oficina .barra{
+      height:5px;
+      background:#DCEDE7;
+      border-radius:0;
+      overflow:hidden;
+    }
+    .t-oficina .barra i{
+      display:block;
+      height:100%;
+      background:var(--accent);
+    }
+    .t-oficina .peca.pronta{
+      background:var(--ink);
+      border-color:var(--ink);
+      box-shadow:3px 3px 0 var(--accent);
+    }
+    .t-oficina .peca.pronta .cod,
+    .t-oficina .peca.pronta h3,
+    .t-oficina .peca.pronta .pct{
+      color:#F4F0DE;
+    }
+    .t-oficina .ordem{
+      background:var(--accent);
+      color:var(--ink);
+      border-radius:0;
+      font-family:var(--mono);
+      padding:4px 9px;
+      font-size:11px;
+    }
+    .t-oficina .rodape{
+      border-top:1px dashed var(--mint-strong);
+      margin-top:12px;
+      padding-top:12px;
+      font-family:var(--mono);
+      font-size:11px;
+      color:#5a5a54;
+      display:flex;
+      justify-content:space-between;
+    }
+    .t-oficina .ferramenta{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:16px 0 12px;
+      align-items:center;
+    }
+    .t-oficina .ferramenta input{
+      flex:1 1 180px;
+      padding:10px 12px;
+      border:1px solid var(--mint-strong);
+      background:var(--surface);
+      font-family:var(--body);
+      font-size:13px;
+      color:var(--ink);
+      border-radius:0;
+      outline:none;
+    }
+    .t-oficina .ferramenta input:focus{
+      border-color:var(--accent);
+    }
+    .t-oficina .ferramenta button{
+      background:var(--surface);
+      border:1px solid var(--mint-strong);
+      padding:9px 18px;
+      font-family:var(--mono);
+      font-size:11px;
+      text-transform:uppercase;
+      cursor:pointer;
+      color:var(--ink);
+      transition:.2s;
+      box-shadow:2px 2px 0 rgba(188,232,221,.6);
+    }
+    .t-oficina .ferramenta button:hover{
+      background:var(--accent);
+      border-color:var(--accent);
+      box-shadow:2px 2px 0 var(--ink);
+    }
+    .t-oficina .ferramenta button.remover{
+      background:transparent;
+      box-shadow:none;
+      border-color:#d4c9b8;
+      color:var(--ink-soft);
+    }
+    .t-oficina .ferramenta button.remover:hover{
+      background:#f0e3d4;
+      border-color:var(--warn);
+      color:var(--warn);
+    }
+    .t-oficina .vazio{
+      text-align:center;
+      padding:24px 0;
+      color:var(--ink-soft);
+      font-style:italic;
+      grid-column:1 / -1;
+    }
+    /* responsividade */
+    @media(max-width:760px){
+      .switcher{padding:12px 14px 8px;}
+      .switcher button{font-size:9px;padding:7px 8px;}
+      .stage{padding:30px 20px 40px;}
+      .t-oficina .bancada{grid-template-columns:1fr 1fr;}
+    }
+    @media(max-width:520px){
+      .t-oficina .bancada{grid-template-columns:1fr;}
+      .switcher button{min-width:33%;}
+    }
+  </style>
+</head>
+<body>
+<div id="app" class="t-diario">
+  <div class="switcher">
+    <button class="active" data-t="diario">Diário de bordo</button>
+    <button data-t="oficina">Oficina</button>
+    <button data-t="clima">Estação meteorológica</button>
+    <button data-t="herbario">Herbário</button>
+    <button data-t="radio">Rádio</button>
+    <button data-t="confeitaria">Confeitaria</button>
+  </div>
+
+  <div class="stage">
+
+    <!-- 1 DIÁRIO DE BORDO (mantido) -->
+    <div class="panel" data-p="diario">
+      <div class="masthead">
+        <h1>Diário de bordo</h1>
+        <div class="coord">SEMANA 14 · TERÇA-FEIRA<br>3 portos visitados de 5</div>
+      </div>
+      <div class="grid" style="display:grid; grid-template-columns:1.55fr 1fr; gap:48px;">
+        <div class="rota" style="position:relative; padding-left:25px;">
+          <div style="position:relative; padding:0 0 25px;"><div style="position:absolute; left:-26px; top:2px; width:10px; height:10px; border-radius:50%; background:var(--accent); border:1.5px solid var(--mint-strong);"></div><div class="hora" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">07h40</div><div class="nome" style="font-family:var(--display); font-size:19px;">Matemática — Funções</div><div class="nota" style="font-size:13px; color:var(--ink-soft);">Exercícios 12 a 20 concluídos</div></div>
+          <div style="position:relative; padding:0 0 25px;"><div style="position:absolute; left:-26px; top:2px; width:10px; height:10px; border-radius:50%; background:var(--accent); border:1.5px solid var(--mint-strong);"></div><div class="hora" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">09h15</div><div class="nome" style="font-family:var(--display); font-size:19px;">História — Era Vargas</div><div class="nota" style="font-size:13px; color:var(--ink-soft);">Resumo do capítulo 6</div></div>
+          <div style="position:relative; padding:0 0 25px;"><div style="position:absolute; left:-26px; top:2px; width:10px; height:10px; border-radius:50%; background:var(--accent); border:1.5px solid var(--mint-strong);"></div><div class="hora" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">14h00</div><div class="nome" style="font-family:var(--display); font-size:19px;">Inglês — Present Perfect</div><div class="nota" style="font-size:13px; color:var(--ink-soft);">20 frases traduzidas</div></div>
+          <div style="position:relative; padding:0 0 25px;"><div style="position:absolute; left:-26px; top:2px; width:10px; height:10px; border-radius:50%; background:var(--bg); border:1.5px solid var(--mint-strong);"></div><div class="hora" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">16h30</div><div class="nome" style="font-family:var(--display); font-size:19px;">Biologia — Genética</div><div class="nota" style="font-size:13px; color:var(--ink-soft);">Revisar cruzamentos de Mendel</div></div>
+          <div style="position:relative; padding:0 0 0;"><div style="position:absolute; left:-26px; top:2px; width:10px; height:10px; border-radius:50%; background:var(--bg); border:1.5px solid var(--mint-strong);"></div><div class="hora" style="font-family:var(--mono); font-size:11px; color:var(--ink-soft);">19h00</div><div class="nome" style="font-family:var(--display); font-size:19px;">Redação — Dissertação</div><div class="nota" style="font-size:13px; color:var(--ink-soft);">Rascunho da introdução</div></div>
+        </div>
+        <div>
+          <div style="position:relative; width:165px; height:165px; margin:0 auto 20px;">
+            <svg width="165" height="165" viewBox="0 0 150 150"><circle fill="none" stroke="#C9E5DD" stroke-width="3" cx="75" cy="75" r="68"></circle><circle id="pomo-progresso" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-dasharray="427.3" stroke-dashoffset="0" cx="75" cy="75" r="68"></circle></svg>
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;"><div id="pomo-tempo" style="font-family:var(--display); font-size:32px;">25:00</div><div id="pomo-lbl" style="font-size:10px; color:var(--ink-soft);">FOCO · 25 MIN</div></div>
+          </div>
+          <div style="display:flex; gap:8px; justify-content:center; margin-bottom:20px;"><button id="pomo-play" style="border:1px solid var(--mint-strong); border-radius:0; color:var(--ink); background:rgba(255,253,244,.55); padding:7px 14px; font-family:var(--mono); font-size:11px; cursor:pointer;">Iniciar</button><button id="pomo-reset" style="border:1px solid var(--mint-strong); border-radius:0; color:var(--ink); background:rgba(255,253,244,.55); padding:7px 14px; font-family:var(--mono); font-size:11px; cursor:pointer;">Reiniciar</button></div>
+          <div style="font-family:var(--mono); font-size:12px; line-height:2; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:14px;">Sequência atual: 9 dias<br>Melhor marca: 14 dias<br>Próxima prova: Biologia, 6 dias</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 OFICINA (COM CARDS DINÂMICOS) -->
+    <div class="panel hidden" data-p="oficina">
+      <div class="masthead">
+        <h1>OFICINA DE ESTUDOS</h1>
+        <div class="ordem">OS Nº 0142</div>
+      </div>
+
+      <!-- ferramenta de adição -->
+      <div class="ferramenta">
+        <input type="text" id="novaPecaInput" placeholder="Ex: Química — Ligações" value="">
+        <button id="adicionarPecaBtn">+ Adicionar card</button>
+        <button id="removerUltimaPecaBtn" class="remover">✕ remover último</button>
+      </div>
+
+      <div class="bancada" id="bancadaCards">
+        <!-- cards iniciais (estáticos) -->
+        <div class="peca pronta" data-id="0"><div class="cod">PC-01 · MAT</div><h3>Funções quadráticas</h3><div class="barra"><i style="width:100%"></i></div><div class="pct">100% — finalizada</div></div>
+        <div class="peca" data-id="1"><div class="cod">PC-02 · HIS</div><h3>Era Vargas</h3><div class="barra"><i style="width:70%"></i></div><div class="pct">70% em produção</div></div>
+        <div class="peca" data-id="2"><div class="cod">PC-03 · ING</div><h3>Present Perfect</h3><div class="barra"><i style="width:45%"></i></div><div class="pct">45% em produção</div></div>
+        <div class="peca" data-id="3"><div class="cod">PC-04 · BIO</div><h3>Genética mendeliana</h3><div class="barra"><i style="width:20%"></i></div><div class="pct">20% em produção</div></div>
+        <div class="peca" data-id="4"><div class="cod">PC-05 · RED</div><h3>Dissertação ENEM</h3><div class="barra"><i style="width:10%"></i></div><div class="pct">10% em produção</div></div>
+        <div class="peca" data-id="5"><div class="cod">PC-06 · FIS</div><h3>Leis de Newton</h3><div class="barra"><i style="width:0%"></i></div><div class="pct">na fila</div></div>
+      </div>
+
+      <div class="rodape">
+        <span id="contagemPecas">6 peças na bancada</span>
+        <span id="resumoStatus">1 finalizada · 4 em produção · 1 na fila</span>
+      </div>
+    </div>
+
+    <!-- 3 CLIMA -->
+    <div class="panel hidden" data-p="clima">
+      <div class="masthead"><h1>Estação de estudos</h1><div class="data">Boletim de terça-feira, 14ª semana do semestre</div></div>
+      <div class="medidores" style="display:flex; gap:16px; margin:26px 0 30px;">
+        <div class="medidor" style="flex:1; background:rgba(255,253,244,.82); border:1px solid var(--mint-strong); box-shadow:4px 4px 0 rgba(188,232,221,.65); padding:16px 14px;"><div class="v" style="font-family:var(--display); font-size:28px; color:var(--ink);">72%</div><div class="k" style="color:var(--ink-soft);">carga cumprida na semana</div></div>
+        <div class="medidor" style="flex:1; background:rgba(255,253,244,.82); border:1px solid var(--mint-strong); box-shadow:4px 4px 0 rgba(188,232,221,.65); padding:16px 14px;"><div class="v" style="font-family:var(--display); font-size:28px; color:var(--ink);">3h40</div><div class="k" style="color:var(--ink-soft);">tempo de estudo hoje</div></div>
+        <div class="medidor" style="flex:1; background:rgba(255,253,244,.82); border:1px solid var(--mint-strong); box-shadow:4px 4px 0 rgba(188,232,221,.65); padding:16px 14px;"><div class="v" style="font-family:var(--display); font-size:28px; color:var(--ink);">9</div><div class="k" style="color:var(--ink-soft);">dias seguidos de foco</div></div>
+      </div>
+      <div class="previsao">
+        <div class="dia" style="display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid #C8E4DC;"><span class="rotulo" style="width:64px; font-size:12px; color:var(--ink-soft);">Hoje</span><span class="icone" style="width:28px; text-align:center; font-size:16px; color:var(--accent);">☀︎</span><span class="desc" style="flex:1; font-size:14px; color:var(--ink);">Céu limpo — boa concentração prevista</span><span class="temp" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">3 tarefas</span></div>
+        <div class="dia" style="display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid #C8E4DC;"><span class="rotulo" style="width:64px; font-size:12px; color:var(--ink-soft);">Amanhã</span><span class="icone" style="width:28px; text-align:center; font-size:16px; color:var(--accent);">☁︎</span><span class="desc" style="flex:1; font-size:14px; color:var(--ink);">Parcialmente nublado — revisão de Física</span><span class="temp" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">2 tarefas</span></div>
+        <div class="dia" style="display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid #C8E4DC;"><span class="rotulo" style="width:64px; font-size:12px; color:var(--ink-soft);">Quinta</span><span class="icone" style="width:28px; text-align:center; font-size:16px; color:var(--accent);">⛈</span><span class="desc" style="flex:1; font-size:14px; color:var(--ink);">Tempestade de provas — Biologia N1</span><span class="temp" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">prova</span></div>
+        <div class="dia" style="display:flex; align-items:center; gap:14px; padding:11px 0;"><span class="rotulo" style="width:64px; font-size:12px; color:var(--ink-soft);">Sexta</span><span class="icone" style="width:28px; text-align:center; font-size:16px; color:var(--accent);">☀︎</span><span class="desc" style="flex:1; font-size:14px; color:var(--ink);">Aberto — dia de folga programada</span><span class="temp" style="font-family:var(--mono); font-size:12px; color:var(--ink-soft);">0 tarefas</span></div>
+      </div>
+    </div>
+
+    <!-- 4 HERBÁRIO -->
+    <div class="panel hidden" data-p="herbario">
+      <div class="masthead"><h1>Herbário de estudos</h1><div class="sub">coleção da 14ª semana</div></div>
+      <div class="colecao" style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:26px;">
+        <div class="especime colhido" style="border:1px solid var(--mint-strong); padding:18px; background:rgba(255,253,244,.82); box-shadow:3px 3px 0 rgba(188,232,221,.55); position:relative;"><div class="num" style="font-family:var(--mono); font-size:10px; color:#8A9169;">Nº 031</div><div class="nome" style="font-family:var(--display); font-style:italic; font-size:17px; color:var(--ink);">Functio quadratica</div><div class="obs" style="font-size:12px; color:var(--ink-soft); line-height:1.5;">Colhida em 25/08. Reconhecível pela concavidade da parábola.</div></div>
+        <div class="especime" style="border:1px solid var(--mint-strong); padding:18px; background:rgba(255,253,244,.82); box-shadow:3px 3px 0 rgba(188,232,221,.55); position:relative;"><div class="num" style="font-family:var(--mono); font-size:10px; color:#8A9169;">Nº 032</div><div class="nome" style="font-family:var(--display); font-style:italic; font-size:17px; color:var(--ink);">Era vargensis</div><div class="obs" style="font-size:12px; color:var(--ink-soft); line-height:1.5;">Em observação — floresce entre 1930 e 1945.</div></div>
+        <div class="especime" style="border:1px solid var(--mint-strong); padding:18px; background:rgba(255,253,244,.82); box-shadow:3px 3px 0 rgba(188,232,221,.55); position:relative;"><div class="num" style="font-family:var(--mono); font-size:10px; color:#8A9169;">Nº 033</div><div class="nome" style="font-family:var(--display); font-style:italic; font-size:17px; color:var(--ink);">Praesens perfectum</div><div class="obs" style="font-size:12px; color:var(--ink-soft); line-height:1.5;">Espécime resistente, requer prática diária.</div></div>
+        <div class="especime" style="border:1px solid var(--mint-strong); padding:18px; background:rgba(255,253,244,.82); box-shadow:3px 3px 0 rgba(188,232,221,.55); position:relative;"><div class="num" style="font-family:var(--mono); font-size:10px; color:#8A9169;">Nº 034</div><div class="nome" style="font-family:var(--display); font-style:italic; font-size:17px; color:var(--ink);">Genetica mendeliana</div><div class="obs" style="font-size:12px; color:var(--ink-soft); line-height:1.5;">Ainda não catalogada — cruzamentos pendentes.</div></div>
+      </div>
+      <div class="rodape" style="margin-top:22px; text-align:center; font-size:11px; color:#8A9169;">2 espécimes colhidos · 2 em observação</div>
+    </div>
+
+    <!-- 5 RADIO -->
+    <div class="panel hidden" data-p="radio">
+      <div class="masthead"><h1>Sintonia de estudos</h1><div class="freq" style="color:var(--accent);">92.7 FM — no ar há 3h40 hoje</div></div>
+      <div class="dial" style="height:3px; background:#C9E5DD; margin:22px 0 28px; position:relative; border-radius:2px;"><i style="position:absolute; top:-5px; width:2px; height:13px; background:#82CDBD; left:10%;"></i><i style="position:absolute; top:-5px; width:2px; height:13px; background:#82CDBD; left:30%;"></i><i style="position:absolute; top:-5px; width:2px; height:13px; background:#82CDBD; left:50%;"></i><i style="position:absolute; top:-5px; width:2px; height:13px; background:#82CDBD; left:70%;"></i><i style="position:absolute; top:-5px; width:2px; height:13px; background:#82CDBD; left:90%;"></i><div class="agulha" style="position:absolute; top:-8px; width:2px; height:19px; background:var(--accent); left:63%;"></div></div>
+      <div class="estacoes">
+        <div class="estacao" style="display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid #C8E4DC;"><span class="num" style="font-family:var(--mono); font-size:12px; color:var(--accent); width:46px;">88.3</span><span class="nome" style="flex:1; font-size:14.5px;">Matemática — Funções</span><div class="onda" style="display:flex; gap:2px; align-items:flex-end; height:16px;"><span style="height:14px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:9px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:16px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:6px; width:2.5px; background:var(--accent); opacity:.85;"></span></div></div>
+        <div class="estacao" style="display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid #C8E4DC;"><span class="num" style="font-family:var(--mono); font-size:12px; color:var(--accent); width:46px;">94.1</span><span class="nome" style="flex:1; font-size:14.5px;">História — Era Vargas</span><div class="onda" style="display:flex; gap:2px; align-items:flex-end; height:16px;"><span style="height:11px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:15px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:8px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:12px; width:2.5px; background:var(--accent); opacity:.85;"></span></div></div>
+        <div class="estacao" style="display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid #C8E4DC;"><span class="num" style="font-family:var(--mono); font-size:12px; color:var(--accent); width:46px;">101.5</span><span class="nome" style="flex:1; font-size:14.5px;">Inglês — Present Perfect</span><div class="onda" style="display:flex; gap:2px; align-items:flex-end; height:16px;"><span style="height:7px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:13px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:10px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:5px; width:2.5px; background:var(--accent); opacity:.85;"></span></div></div>
+        <div class="estacao" style="display:flex; align-items:center; gap:14px; padding:13px 0;"><span class="num" style="font-family:var(--mono); font-size:12px; color:var(--accent); width:46px;">106.9</span><span class="nome" style="flex:1; font-size:14.5px;">Biologia — Genética</span><div class="onda" style="display:flex; gap:2px; align-items:flex-end; height:16px;"><span style="height:5px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:8px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:4px; width:2.5px; background:var(--accent); opacity:.85;"></span><span style="height:6px; width:2.5px; background:var(--accent); opacity:.85;"></span></div></div>
+      </div>
+    </div>
+
+    <!-- 6 CONFEITARIA -->
+    <div class="panel hidden" data-p="confeitaria">
+      <div class="masthead"><h1>Receitas da semana</h1><div class="sub">o que colocar no forno hoje</div></div>
+      <div class="receitas" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="receita" style="background:rgba(255,253,244,.88); border:1px solid var(--mint-strong); padding:18px 20px; box-shadow:4px 4px 0 rgba(188,232,221,.6); display:flex; justify-content:space-between; align-items:center;"><div class="info"><h3 style="font-family:var(--display); color:var(--ink); font-size:18px; margin:0;">Funções quadráticas</h3><div class="ingred" style="color:var(--ink-soft); font-size:12px;">2 xícaras de exercícios · 1 colher de revisão teórica</div></div><div class="tempo" style="color:var(--ink); background:var(--mint); border:1px solid var(--mint-strong); padding:5px 10px; font-family:var(--mono); font-size:12px;">40 min</div></div>
+        <div class="receita" style="background:rgba(255,253,244,.88); border:1px solid var(--mint-strong); padding:18px 20px; box-shadow:4px 4px 0 rgba(188,232,221,.6); display:flex; justify-content:space-between; align-items:center;"><div class="info"><h3 style="font-family:var(--display); color:var(--ink); font-size:18px; margin:0;">Era Vargas</h3><div class="ingred" style="color:var(--ink-soft); font-size:12px;">1 resumo do capítulo · mapas mentais a gosto</div></div><div class="tempo" style="color:var(--ink); background:var(--mint); border:1px solid var(--mint-strong); padding:5px 10px; font-family:var(--mono); font-size:12px;">35 min</div></div>
+        <div class="receita" style="background:rgba(255,253,244,.88); border:1px solid var(--mint-strong); padding:18px 20px; box-shadow:4px 4px 0 rgba(188,232,221,.6); display:flex; justify-content:space-between; align-items:center;"><div class="info"><h3 style="font-family:var(--display); color:var(--ink); font-size:18px; margin:0;">Present Perfect</h3><div class="ingred" style="color:var(--ink-soft); font-size:12px;">20 frases traduzidas · flashcards frescos</div></div><div class="tempo" style="color:var(--ink); background:var(--mint); border:1px solid var(--mint-strong); padding:5px 10px; font-family:var(--mono); font-size:12px;">25 min</div></div>
+        <div class="receita" style="background:rgba(255,253,244,.88); border:1px solid var(--mint-strong); padding:18px 20px; box-shadow:4px 4px 0 rgba(188,232,221,.6); display:flex; justify-content:space-between; align-items:center;"><div class="info"><h3 style="font-family:var(--display); color:var(--ink); font-size:18px; margin:0;">Genética mendeliana</h3><div class="ingred" style="color:var(--ink-soft); font-size:12px;">cruzamentos de Mendel · uma pitada de exercícios</div></div><div class="tempo" style="color:var(--ink); background:var(--mint); border:1px solid var(--mint-strong); padding:5px 10px; font-family:var(--mono); font-size:12px;">50 min</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ------ POMODORO (mantido) ------
+    const POMO_DURACAO = 25 * 60;
+    const CIRCUNFERENCIA = 2 * Math.PI * 68;
+    let pomoRestante = POMO_DURACAO;
+    let pomoRodando = false;
+    let pomoIntervalo = null;
+
+    const pomoTempoEl = document.getElementById('pomo-tempo');
+    const pomoProgressoEl = document.getElementById('pomo-progresso');
+    const pomoPlayBtn = document.getElementById('pomo-play');
+    const pomoResetBtn = document.getElementById('pomo-reset');
+    if(pomoProgressoEl) pomoProgressoEl.setAttribute('stroke-dasharray', CIRCUNFERENCIA.toFixed(1));
+
+    function pomoAtualizarTela() {
+      if(!pomoTempoEl) return;
+      const min = String(Math.floor(pomoRestante / 60)).padStart(2, '0');
+      const seg = String(pomoRestante % 60).padStart(2, '0');
+      pomoTempoEl.textContent = min + ':' + seg;
+      if(pomoProgressoEl) {
+        const fracaoRestante = pomoRestante / POMO_DURACAO;
+        pomoProgressoEl.style.strokeDashoffset = (CIRCUNFERENCIA * (1 - fracaoRestante)).toFixed(1);
+      }
+    }
+
+    function pomoTick() {
+      if (pomoRestante <= 0) {
+        clearInterval(pomoIntervalo);
+        pomoRodando = false;
+        if(pomoPlayBtn) pomoPlayBtn.textContent = 'Iniciar';
+        const lbl = document.getElementById('pomo-lbl');
+        if(lbl) lbl.textContent = 'CICLO CONCLUÍDO';
+        return;
+      }
+      pomoRestante -= 1;
+      pomoAtualizarTela();
+    }
+
+    if(pomoPlayBtn) {
+      pomoPlayBtn.addEventListener('click', () => {
+        pomoRodando = !pomoRodando;
+        if (pomoRodando) {
+          pomoPlayBtn.textContent = 'Pausar';
+          const lbl = document.getElementById('pomo-lbl');
+          if(lbl) lbl.textContent = 'FOCO · 25 MIN';
+          pomoIntervalo = setInterval(pomoTick, 1000);
+        } else {
+          pomoPlayBtn.textContent = 'Iniciar';
+          clearInterval(pomoIntervalo);
+        }
+      });
+    }
+
+    if(pomoResetBtn) {
+      pomoResetBtn.addEventListener('click', () => {
+        clearInterval(pomoIntervalo);
+        pomoRodando = false;
+        pomoRestante = POMO_DURACAO;
+        if(pomoPlayBtn) pomoPlayBtn.textContent = 'Iniciar';
+        const lbl = document.getElementById('pomo-lbl');
+        if(lbl) lbl.textContent = 'FOCO · 25 MIN';
+        pomoAtualizarTela();
+      });
+    }
+    pomoAtualizarTela();
+
+    // ------ SWITCHER (abas) ------
+    const app = document.getElementById('app');
+    document.querySelectorAll('.switcher button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.t;
+        document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+        const panel = document.querySelector('.panel[data-p="' + t + '"]');
+        if(panel) panel.classList.remove('hidden');
+        app.className = 't-' + t;
+      });
+    });
+
+    // ------ OFICINA: ADICIONAR CARDS (funcionalidade principal) ------
+    const bancada = document.getElementById('bancadaCards');
+    const inputNova = document.getElementById('novaPecaInput');
+    const btnAdicionar = document.getElementById('adicionarPecaBtn');
+    const btnRemoverUltimo = document.getElementById('removerUltimaPecaBtn');
+    const contagemEl = document.getElementById('contagemPecas');
+    const resumoEl = document.getElementById('resumoStatus');
+
+    // contador interno para IDs (evitar conflito com os estáticos)
+    let nextId = 6; // porque já temos 6 cards estáticos (0..5)
+
+    // Atualiza o rodapé (contagem e resumo)
+    function atualizarRodape() {
+      const cards = bancada.querySelectorAll('.peca');
+      const total = cards.length;
+      const finalizados = bancada.querySelectorAll('.peca.pronta').length;
+      const emProducao = bancada.querySelectorAll('.peca:not(.pronta)').length;
+      contagemEl.textContent = total + ' peças na bancada';
+
+      // resumo mais descritivo
+      let resumo = '';
+      if(finalizados > 0) resumo += finalizados + ' finalizada' + (finalizados>1?'s':'') + ' · ';
+      const producao = total - finalizados;
+      if(producao > 0) resumo += producao + ' em produção';
+      else resumo += 'nenhuma em produção';
+      resumoEl.textContent = resumo;
+    }
+
+    // Cria um elemento card com as classes e estrutura correta
+    function criarCard(nomeTitulo, id) {
+      const div = document.createElement('div');
+      div.className = 'peca';
+      div.dataset.id = id;
+      // gera um código simples baseado no id
+      const codigo = 'PC-' + String(id+1).padStart(2, '0') + ' · ' + nomeTitulo.substring(0,3).toUpperCase();
+      // percentual aleatório entre 0 e 40 para novos cards (para não ficar 100% de cara)
+      const pct = Math.floor(Math.random() * 41);
+      const pctText = pct + '% em produção';
+      const larguraBarra = pct + '%';
+
+      div.innerHTML = `
+        <div class="cod">${codigo}</div>
+        <h3>${nomeTitulo}</h3>
+        <div class="barra"><i style="width:${larguraBarra}"></i></div>
+        <div class="pct">${pctText}</div>
+      `;
+      return div;
+    }
+
+    // Adiciona um card novo
+    function adicionarCard() {
+      const titulo = inputNova.value.trim();
+      if (titulo === '') {
+        alert('Por favor, digite o título do card (ex: Química — Ligações)');
+        return;
+      }
+      const id = nextId++;
+      const card = criarCard(titulo, id);
+      bancada.appendChild(card);
+      inputNova.value = '';
+      atualizarRodape();
+    }
+
+    // Remove o último card (desde que não seja um dos estáticos iniciais)
+    function removerUltimoCard() {
+      const cards = bancada.querySelectorAll('.peca');
+      if (cards.length <= 6) {
+        alert('Os 6 cards iniciais não podem ser removidos. Adicione novos cards para removê-los.');
+        return;
+      }
+      const ultimo = cards[cards.length - 1];
+      if (ultimo) {
+        bancada.removeChild(ultimo);
+        atualizarRodape();
+      }
+    }
+
+    // Eventos
+    if (btnAdicionar) {
+      btnAdicionar.addEventListener('click', adicionarCard);
+    }
+    if (btnRemoverUltimo) {
+      btnRemoverUltimo.addEventListener('click', removerUltimoCard);
+    }
+    // Enter no input também adiciona
+    if (inputNova) {
+      inputNova.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          adicionarCard();
+        }
+      });
+    }
+
+    // Inicializa contagem
+    atualizarRodape();
+
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estúdio · painel lateral</title>
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; }
+    :root{
+      --bg:#F4F0DE;
+      --surface:#FFFDF4;
+      --ink:#294542;
+      --ink-soft:#65736D;
+      --accent:#F3AE58;
+      --mint:#BCE8DD;
+      --mint-strong:#39BFA9;
+      --warn:#D98255;
+      --line:#79D3C1;
+      --display: Georgia, 'Times New Roman', serif;
+      --body: Arial, Helvetica, sans-serif;
+      --mono:'Courier New', monospace;
+      --sidebar-width: 200px;
+    }
+    html, body {
+      height:100%;
+      background:var(--bg);
+      font-family:var(--body);
+      color:var(--ink);
+    }
+    #app {
+      display:flex;
+      min-height:100vh;
+      background:var(--bg);
+    }
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: #ECE7D5;
+      border-right: 2px solid var(--mint-strong);
+      padding: 24px 0 20px 0;
+      display:flex;
+      flex-direction:column;
+      flex-shrink:0;
+      height:100vh;
+      position:sticky;
+      top:0;
+      overflow-y:auto;
+    }
+    .sidebar .logo {
+      font-family:var(--display);
+      font-size:20px;
+      padding:0 18px 20px 18px;
+      border-bottom:1px solid var(--mint-strong);
+      margin-bottom:20px;
+      color:var(--ink);
+      letter-spacing:.3px;
+    }
+    .sidebar .logo small {
+      display:block;
+      font-size:11px;
+      font-family:var(--body);
+      color:var(--ink-soft);
+      letter-spacing:0;
+      margin-top:4px;
+    }
+    .sidebar nav {
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      padding:0 12px;
+      flex:1;
+    }
+    .sidebar nav button {
+      background:transparent;
+      border:none;
+      border-radius:0;
+      padding:10px 12px;
+      text-align:left;
+      font-size:12.5px;
+      font-family:var(--body);
+      color:var(--ink-soft);
+      cursor:pointer;
+      transition:.2s;
+      letter-spacing:.4px;
+      border-left:3px solid transparent;
+      text-transform:uppercase;
+    }
+    .sidebar nav button:hover {
+      background:rgba(57, 191, 169, 0.12);
+      color:var(--ink);
+      border-left-color:var(--mint-strong);
+    }
+    .sidebar nav button.active {
+      background:rgba(57, 191, 169, 0.18);
+      color:var(--ink);
+      font-weight:600;
+      border-left-color:var(--accent);
+    }
+    .sidebar .footer-links {
+      border-top:1px solid var(--mint-strong);
+      padding:14px 12px 0;
+      margin-top:10px;
+    }
+    .sidebar .footer-links button {
+      display:block;
+      width:100%;
+      background:transparent;
+      border:none;
+      padding:8px 12px;
+      text-align:left;
+      font-size:11px;
+      color:var(--ink-soft);
+      cursor:pointer;
+      font-family:var(--body);
+      border-left:3px solid transparent;
+      transition:.2s;
+    }
+    .sidebar .footer-links button:hover {
+      background:rgba(57, 191, 169, 0.10);
+      color:var(--ink);
+      border-left-color:var(--mint-strong);
+    }
+    .sidebar .footer-links button.active {
+      background:rgba(57, 191, 169, 0.15);
+      color:var(--ink);
+      font-weight:500;
+      border-left-color:var(--accent);
+    }
+
+    /* ===== CONTEÚDO ===== */
+    .main-content {
+      flex:1;
+      padding:28px 36px 40px 36px;
+      background:
+        radial-gradient(circle at 91% 12%, rgba(188,232,221,.65) 0 58px, transparent 59px),
+        radial-gradient(circle at 9% 92%, rgba(243,174,88,.16) 0 72px, transparent 73px),
+        var(--bg);
+      overflow-y:auto;
+    }
+    .panel {
+      display:block;
+      animation: fadeIn .25s;
+    }
+    .panel.hidden { display:none; }
+    @keyframes fadeIn { 0%{opacity:0.4;} 100%{opacity:1;} }
+
+    /* ===== estilos internos (cards, oficina, etc) ===== */
+    .masthead {
+      border-bottom:1px solid var(--mint-strong);
+      padding-bottom:14px;
+      margin-bottom:28px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      flex-wrap:wrap;
+    }
+    .masthead h1 {
+      font-family:var(--display);
+      font-weight:400;
+      color:var(--ink);
+      letter-spacing:.2px;
+      font-size:26px;
+    }
+    .masthead h1::before {
+      content:'✦ ';
+      color:var(--accent);
+      font-family:Arial,sans-serif;
+      font-size:.55em;
+      vertical-align:middle;
+    }
+    .coord, .data, .sub, .freq, .registro, .rodape, .t-diario .porto .hora, .t-oficina .peca .cod, .t-oficina .peca .pct {
+      color:var(--ink-soft);
+    }
+
+    /* DIÁRIO */
+    .grid-diario {
+      display:grid;
+      grid-template-columns:1.55fr 1fr;
+      gap:48px;
+    }
+    .rota {
+      position:relative;
+      padding-left:25px;
+    }
+    .rota::before {
+      content:'';
+      position:absolute;
+      left:6px;
+      top:6px;
+      bottom:6px;
+      width:1px;
+      background:var(--line);
+      opacity:.75;
+    }
+    .porto {
+      position:relative;
+      padding:0 0 25px;
+    }
+    .porto::before {
+      content:'';
+      position:absolute;
+      left:-26px;
+      top:2px;
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--bg);
+      border:1.5px solid var(--mint-strong);
+    }
+    .porto.feito::before {
+      background:var(--accent);
+      border-color:var(--accent);
+    }
+    .porto .hora {
+      font-family:var(--mono);
+      font-size:11px;
+    }
+    .porto .nome {
+      font-family:var(--display);
+      font-size:19px;
+      margin-top:2px;
+    }
+    .porto .nota {
+      font-size:13px;
+      color:var(--ink-soft);
+      margin-top:3px;
+    }
+    .instrumento {
+      position:relative;
+      width:165px;
+      height:165px;
+      margin:0 auto 20px;
+    }
+    .instrumento svg { transform:rotate(-90deg); }
+    .instrumento .trilha { fill:none; stroke:#C9E5DD; stroke-width:3; }
+    .instrumento .progresso { fill:none; stroke:var(--accent); stroke-width:3; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+    .instrumento .miolo {
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+    }
+    .instrumento .num { font-family:var(--display); font-size:32px; }
+    .instrumento .lbl { font-size:10px; color:var(--ink-soft); margin-top:2px; }
+    .comandos {
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      margin-bottom:20px;
+    }
+    .comandos button {
+      border:1px solid var(--mint-strong);
+      border-radius:0;
+      color:var(--ink);
+      background:rgba(255,253,244,.55);
+      padding:7px 14px;
+      font-family:var(--mono);
+      font-size:11px;
+      cursor:pointer;
+    }
+    .comandos button:hover { border-color:var(--accent); color:var(--accent); }
+    .registro {
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:2;
+      color:var(--ink-soft);
+      border-top:1px solid var(--line);
+      padding-top:14px;
+    }
+
+    /* OFICINA */
+    .bancada {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-bottom:20px;
+    }
+    .peca {
+      background:rgba(255,253,244,.82);
+      border:1px solid var(--mint-strong);
+      padding:17px;
+      box-shadow:3px 3px 0 rgba(188,232,221,.7);
+    }
+    .peca h3 {
+      font-family:var(--display);
+      font-weight:400;
+      font-size:17px;
+      color:var(--ink);
+      margin:6px 0 8px;
+    }
+    .barra {
+      height:5px;
+      background:#DCEDE7;
+      border-radius:0;
+      overflow:hidden;
+    }
+    .barra i { display:block; height:100%; background:var(--accent); }
+    .peca.pronta { background:var(--ink); border-color:var(--ink); box-shadow:3px 3px 0 var(--accent); }
+    .peca.pronta .cod, .peca.pronta h3, .peca.pronta .pct { color:#F4F0DE; }
+    .ordem {
+      background:var(--accent);
+      color:var(--ink);
+      border-radius:0;
+      font-family:var(--mono);
+      padding:4px 9px;
+      font-size:11px;
+    }
+    .ferramenta {
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:16px 0 12px;
+      align-items:center;
+    }
+    .ferramenta input {
+      flex:1 1 180px;
+      padding:10px 12px;
+      border:1px solid var(--mint-strong);
+      background:var(--surface);
+      font-size:13px;
+      color:var(--ink);
+      border-radius:0;
+      outline:none;
+    }
+    .ferramenta input:focus { border-color:var(--accent); }
+    .ferramenta button {
+      background:var(--surface);
+      border:1px solid var(--mint-strong);
+      padding:9px 18px;
+      font-family:var(--mono);
+      font-size:11px;
+      text-transform:uppercase;
+      cursor:pointer;
+      color:var(--ink);
+      transition:.2s;
+      box-shadow:2px 2px 0 rgba(188,232,221,.6);
+    }
+    .ferramenta button:hover { background:var(--accent); border-color:var(--accent); box-shadow:2px 2px 0 var(--ink); }
+    .ferramenta button.remover { background:transparent; box-shadow:none; border-color:#d4c9b8; color:var(--ink-soft); }
+    .ferramenta button.remover:hover { background:#f0e3d4; border-color:var(--warn); color:var(--warn); }
+    .rodape {
+      border-top:1px dashed var(--mint-strong);
+      margin-top:12px;
+      padding-top:12px;
+      font-family:var(--mono);
+      font-size:11px;
+      color:#5a5a54;
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    /* CLIMA */
+    .medidores { display:flex; gap:16px; margin:26px 0 30px; }
+    .medidor { flex:1; background:rgba(255,253,244,.82); border:1px solid var(--mint-strong); box-shadow:4px 4px 0 rgba(188,232,221,.65); padding:16px 14px; }
+    .medidor .v { font-family:var(--display); font-size:28px; color:var(--ink); }
+    .medidor .k { font-size:11px; color:var(--ink-soft); margin-top:2px; }
+    .previsao .dia { display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid #C8E4DC; }
+    .previsao .dia:last-child { border-bottom:none; }
+    .previsao .rotulo { width:64px; font-size:12px; color:var(--ink-soft); }
+    .previsao .icone { width:28px; text-align:center; font-size:16px; color:var(--accent); }
+    .previsao .desc { flex:1; font-size:14px; color:var(--ink); }
+    .previsao .temp { font-family:var(--mono); font-size:12px; color:var(--ink-soft); }
+
+    /* HERBÁRIO */
+    .colecao { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:26px; }
+    .especime { border:1px solid var(--mint-strong); padding:18px; background:rgba(255,253,244,.82); box-shadow:3px 3px 0 rgba(188,232,221,.55); position:relative; }
+    .especime .num { font-family:var(--mono); font-size:10px; color:#8A9169; }
+    .especime .nome { font-family:var(--display); font-style:italic; font-size:17px; color:var(--ink); margin:5px 0 8px; }
+    .especime .obs { font-size:12px; color:var(--ink-soft); line-height:1.5; }
+
+    /* RÁDIO */
+    .dial { height:3px; background:#C9E5DD; margin:22px 0 28px; position:relative; border-radius:2px; }
+    .dial i { position:absolute; top:-5px; width:2px; height:13px; background:#82CDBD; }
+    .dial .agulha { position:absolute; top:-8px; width:2px; height:19px; background:var(--accent); }
+    .estacoes .estacao { display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid #C8E4DC; }
+    .estacoes .estacao:last-child { border:none; }
+    .estacoes .num { font-family:var(--mono); font-size:12px; color:var(--accent); width:46px; }
+    .estacoes .nome { flex:1; font-size:14.5px; }
+    .onda { display:flex; gap:2px; align-items:flex-end; height:16px; }
+    .onda span { width:2.5px; background:var(--accent); opacity:.85; }
+
+    /* CONFEITARIA */
+    .receitas { display:flex; flex-direction:column; gap:16px; }
+    .receita { background:rgba(255,253,244,.88); border:1px solid var(--mint-strong); padding:18px 20px; box-shadow:4px 4px 0 rgba(188,232,221,.6); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+    .receita .info h3 { font-family:var(--display); color:var(--ink); font-size:18px; margin:0; }
+    .receita .info .ingred { color:var(--ink-soft); font-size:12px; margin-top:3px; }
+    .receita .tempo { color:var(--ink); background:var(--mint); border:1px solid var(--mint-strong); padding:5px 10px; font-family:var(--mono); font-size:12px; }
+
+    /* TUTORIAL e EQUIPE (páginas especiais) */
+    .tutorial-box, .equipe-box {
+      max-width:760px;
+      margin:0 auto;
+      background:rgba(255,253,244,.78);
+      padding:28px 34px;
+      border:1px solid var(--mint-strong);
+      box-shadow:6px 6px 0 rgba(188,232,221,.5);
+    }
+    .tutorial-box h2, .equipe-box h2 {
+      font-family:var(--display);
+      font-size:24px;
+      margin-bottom:16px;
+      color:var(--ink);
+    }
+    .tutorial-box p, .equipe-box p {
+      line-height:1.7;
+      margin-bottom:14px;
+      color:var(--ink-soft);
+    }
+    .tutorial-box ul {
+      padding-left:24px;
+      margin-bottom:16px;
+      color:var(--ink-soft);
+    }
+    .tutorial-box ul li { margin-bottom:8px; }
+    .equipe-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(180px,1fr));
+      gap:18px;
+      margin-top:16px;
+    }
+    .membro {
+      background:var(--surface);
+      padding:16px;
+      border:1px solid var(--mint-strong);
+      box-shadow:3px 3px 0 rgba(188,232,221,.4);
+    }
+    .membro h4 { font-family:var(--display); font-size:18px; color:var(--ink); }
+    .membro span { font-size:12px; color:var(--ink-soft); display:block; margin-top:4px; }
+
+    @media (max-width:760px) {
+      .sidebar { width:150px; padding:16px 0; }
+      .sidebar .logo { font-size:17px; padding:0 12px 16px 12px; }
+      .sidebar nav button { font-size:11px; padding:8px 10px; }
+      .main-content { padding:20px 16px 30px; }
+      .grid-diario { grid-template-columns:1fr; gap:30px; }
+      .bancada { grid-template-columns:1fr 1fr; }
+      .medidores { flex-direction:column; }
+    }
+    @media (max-width:520px) {
+      .sidebar { width:120px; }
+      .sidebar .logo { font-size:14px; }
+      .sidebar nav button { font-size:9px; padding:6px 8px; }
+      .bancada, .colecao { grid-template-columns:1fr; }
+      .main-content { padding:14px 12px 24px; }
+      .ferramenta { flex-direction:column; align-items:stretch; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">Estúdio <small>painel de bordo</small></div>
+    <nav id="nav-principal">
+      <button class="active" data-t="diario">Diário</button>
+      <button data-t="oficina">Oficina</button>
+      <button data-t="clima">Clima</button>
+      <button data-t="herbario">Herbário</button>
+      <button data-t="radio">Rádio</button>
+      <button data-t="confeitaria">Confeitaria</button>
+    </nav>
+    <div class="footer-links">
+      <button data-t="tutorial" id="btn-tutorial">📖 Tutorial</button>
+      <button data-t="equipe" id="btn-equipe">👥 Equipe</button>
+    </div>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="main-content">
+
+    <!-- ===== DIÁRIO ===== -->
+    <div class="panel" data-p="diario">
+      <div class="masthead">
+        <h1>Diário de bordo</h1>
+        <div class="coord">SEMANA 14 · TERÇA-FEIRA<br>3 portos visitados de 5</div>
+      </div>
+      <div class="grid-diario">
+        <div class="rota">
+          <div class="porto feito"><div class="hora">07h40</div><div class="nome">Matemática — Funções</div><div class="nota">Exercícios 12 a 20 concluídos</div></div>
+          <div class="porto feito"><div class="hora">09h15</div><div class="nome">História — Era Vargas</div><div class="nota">Resumo do capítulo 6</div></div>
+          <div class="porto feito"><div class="hora">14h00</div><div class="nome">Inglês — Present Perfect</div><div class="nota">20 frases traduzidas</div></div>
+          <div class="porto"><div class="hora">16h30</div><div class="nome">Biologia — Genética</div><div class="nota">Revisar cruzamentos de Mendel</div></div>
+          <div class="porto"><div class="hora">19h00</div><div class="nome">Redação — Dissertação</div><div class="nota">Rascunho da introdução</div></div>
+        </div>
+        <div>
+          <div class="instrumento">
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <circle class="trilha" cx="75" cy="75" r="68"></circle>
+              <circle id="pomo-progresso" class="progresso" cx="75" cy="75" r="68" stroke-dasharray="427.3" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="miolo">
+              <div class="num" id="pomo-tempo">25:00</div>
+              <div class="lbl" id="pomo-lbl">FOCO · 25 MIN</div>
+            </div>
+          </div>
+          <div class="comandos">
+            <button id="pomo-play">Iniciar</button>
+            <button id="pomo-reset">Reiniciar</button>
+          </div>
+          <div class="registro">Sequência atual: 9 dias<br>Melhor marca: 14 dias<br>Próxima prova: Biologia, 6 dias</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== OFICINA ===== -->
+    <div class="panel hidden" data-p="oficina">
+      <div class="masthead"><h1>OFICINA DE ESTUDOS</h1><div class="ordem">OS Nº 0142</div></div>
+      <div class="ferramenta">
+        <input type="text" id="novaPecaInput" placeholder="Ex: Química — Ligações" value="">
+        <button id="adicionarPecaBtn">+ Adicionar card</button>
+        <button id="removerUltimaPecaBtn" class="remover">✕ remover último</button>
+      </div>
+      <div class="bancada" id="bancadaCards">
+        <div class="peca pronta" data-id="0"><div class="cod">PC-01 · MAT</div><h3>Funções quadráticas</h3><div class="barra"><i style="width:100%"></i></div><div class="pct">100% — finalizada</div></div>
+        <div class="peca" data-id="1"><div class="cod">PC-02 · HIS</div><h3>Era Vargas</h3><div class="barra"><i style="width:70%"></i></div><div class="pct">70% em produção</div></div>
+        <div class="peca" data-id="2"><div class="cod">PC-03 · ING</div><h3>Present Perfect</h3><div class="barra"><i style="width:45%"></i></div><div class="pct">45% em produção</div></div>
+        <div class="peca" data-id="3"><div class="cod">PC-04 · BIO</div><h3>Genética mendeliana</h3><div class="barra"><i style="width:20%"></i></div><div class="pct">20% em produção</div></div>
+        <div class="peca" data-id="4"><div class="cod">PC-05 · RED</div><h3>Dissertação ENEM</h3><div class="barra"><i style="width:10%"></i></div><div class="pct">10% em produção</div></div>
+        <div class="peca" data-id="5"><div class="cod">PC-06 · FIS</div><h3>Leis de Newton</h3><div class="barra"><i style="width:0%"></i></div><div class="pct">na fila</div></div>
+      </div>
+      <div class="rodape"><span id="contagemPecas">6 peças na bancada</span><span id="resumoStatus">1 finalizada · 4 em produção · 1 na fila</span></div>
+    </div>
+
+    <!-- ===== CLIMA ===== -->
+    <div class="panel hidden" data-p="clima">
+      <div class="masthead"><h1>Estação de estudos</h1><div class="data">Boletim de terça-feira, 14ª semana</div></div>
+      <div class="medidores">
+        <div class="medidor"><div class="v">72%</div><div class="k">carga cumprida na semana</div></div>
+        <div class="medidor"><div class="v">3h40</div><div class="k">tempo de estudo hoje</div></div>
+        <div class="medidor"><div class="v">9</div><div class="k">dias seguidos de foco</div></div>
+      </div>
+      <div class="previsao">
+        <div class="dia"><span class="rotulo">Hoje</span><span class="icone">☀︎</span><span class="desc">Céu limpo — boa concentração</span><span class="temp">3 tarefas</span></div>
+        <div class="dia"><span class="rotulo">Amanhã</span><span class="icone">☁︎</span><span class="desc">Parcialmente nublado — revisão de Física</span><span class="temp">2 tarefas</span></div>
+        <div class="dia"><span class="rotulo">Quinta</span><span class="icone">⛈</span><span class="desc">Tempestade de provas — Biologia N1</span><span class="temp">prova</span></div>
+        <div class="dia"><span class="rotulo">Sexta</span><span class="icone">☀︎</span><span class="desc">Aberto — dia de folga programada</span><span class="temp">0 tarefas</span></div>
+      </div>
+    </div>
+
+    <!-- ===== HERBÁRIO ===== -->
+    <div class="panel hidden" data-p="herbario">
+      <div class="masthead"><h1>Herbário de estudos</h1><div class="sub">coleção da 14ª semana</div></div>
+      <div class="colecao">
+        <div class="especime"><div class="num">Nº 031</div><div class="nome">Functio quadratica</div><div class="obs">Colhida em 25/08. Reconhecível pela concavidade da parábola.</div></div>
+        <div class="especime"><div class="num">Nº 032</div><div class="nome">Era vargensis</div><div class="obs">Em observação — floresce entre 1930 e 1945.</div></div>
+        <div class="especime"><div class="num">Nº 033</div><div class="nome">Praesens perfectum</div><div class="obs">Espécime resistente, requer prática diária.</div></div>
+        <div class="especime"><div class="num">Nº 034</div><div class="nome">Genetica mendeliana</div><div class="obs">Ainda não catalogada — cruzamentos pendentes.</div></div>
+      </div>
+      <div class="rodape" style="margin-top:22px; justify-content:center;">2 espécimes colhidos · 2 em observação</div>
+    </div>
+
+    <!-- ===== RÁDIO ===== -->
+    <div class="panel hidden" data-p="radio">
+      <div class="masthead"><h1>Sintonia de estudos</h1><div class="freq">92.7 FM — no ar há 3h40 hoje</div></div>
+      <div class="dial"><i style="left:10%"></i><i style="left:30%"></i><i style="left:50%"></i><i style="left:70%"></i><i style="left:90%"></i><div class="agulha" style="left:63%"></div></div>
+      <div class="estacoes">
+        <div class="estacao"><span class="num">88.3</span><span class="nome">Matemática — Funções</span><div class="onda"><span style="height:14px"></span><span style="height:9px"></span><span style="height:16px"></span><span style="height:6px"></span></div></div>
+        <div class="estacao"><span class="num">94.1</span><span class="nome">História — Era Vargas</span><div class="onda"><span style="height:11px"></span><span style="height:15px"></span><span style="height:8px"></span><span style="height:12px"></span></div></div>
+        <div class="estacao"><span class="num">101.5</span><span class="nome">Inglês — Present Perfect</span><div class="onda"><span style="height:7px"></span><span style="height:13px"></span><span style="height:10px"></span><span style="height:5px"></span></div></div>
+        <div class="estacao"><span class="num">106.9</span><span class="nome">Biologia — Genética</span><div class="onda"><span style="height:5px"></span><span style="height:8px"></span><span style="height:4px"></span><span style="height:6px"></span></div></div>
+      </div>
+    </div>
+
+    <!-- ===== CONFEITARIA ===== -->
+    <div class="panel hidden" data-p="confeitaria">
+      <div class="masthead"><h1>Receitas da semana</h1><div class="sub">o que colocar no forno hoje</div></div>
+      <div class="receitas">
+        <div class="receita"><div class="info"><h3>Funções quadráticas</h3><div class="ingred">2 xícaras de exercícios · 1 colher de revisão teórica</div></div><div class="tempo">40 min</div></div>
+        <div class="receita"><div class="info"><h3>Era Vargas</h3><div class="ingred">1 resumo do capítulo · mapas mentais a gosto</div></div><div class="tempo">35 min</div></div>
+        <div class="receita"><div class="info"><h3>Present Perfect</h3><div class="ingred">20 frases traduzidas · flashcards frescos</div></div><div class="tempo">25 min</div></div>
+        <div class="receita"><div class="info"><h3>Genética mendeliana</h3><div class="ingred">cruzamentos de Mendel · uma pitada de exercícios</div></div><div class="tempo">50 min</div></div>
+      </div>
+    </div>
+
+    <!-- ===== TUTORIAL ===== -->
+    <div class="panel hidden" data-p="tutorial">
+      <div class="tutorial-box">
+        <h2>📖 Como usar o painel</h2>
+        <p>Bem-vindo ao <strong>Estúdio</strong> — seu painel de bordo para organizar os estudos.</p>
+        <ul>
+          <li><strong>Diário:</strong> acompanhe sua rota de estudos diários, com portos (tarefas) e o pomodoro integrado.</li>
+          <li><strong>Oficina:</strong> gerencie cards de conteúdo. Use o campo para <em>adicionar</em> novos cards e o botão para <em>remover</em> o último adicionado.</li>
+          <li><strong>Clima:</strong> visualize métricas gerais e a previsão de tarefas dos próximos dias.</li>
+          <li><strong>Herbário:</strong> uma coleção visual de “espécimes” de estudo — cada matéria catalogada.</li>
+          <li><strong>Rádio:</strong> sintonize diferentes disciplinas, com ondas que representam a intensidade do foco.</li>
+          <li><strong>Confeitaria:</strong> receitas de estudo com ingredientes (atividades) e tempo estimado.</li>
+        </ul>
+        <p>Use a barra lateral para navegar entre as seções. Os botões <strong>Tutorial</strong> e <strong>Equipe</strong> ficam na parte inferior da sidebar.</p>
+        <p style="margin-top:12px; font-style:italic; color:var(--accent);">✦ Dica: na Oficina, você pode criar cards personalizados para qualquer matéria.</p>
+      </div>
+    </div>
+
+    <!-- ===== EQUIPE ===== -->
+    <div class="panel hidden" data-p="equipe">
+      <div class="equipe-box">
+        <h2>👥 Equipe do projeto</h2>
+        <p>Conheça quem contribuiu para este painel de estudos.</p>
+        <div class="equipe-grid">
+          <div class="membro"><h4>Ana Clara</h4><span>design & interface</span></div>
+          <div class="membro"><h4>Bruno Mendes</h4><span>desenvolvimento front-end</span></div>
+          <div class="membro"><h4>Carla Souza</h4><span>conteúdo e curadoria</span></div>
+          <div class="membro"><h4>Daniel Porto</h4><span>experiência do usuário</span></div>
+          <div class="membro"><h4>Elena Rios</h4><span>ilustração e identidade</span></div>
+          <div class="membro"><h4>Felipe Andrade</h4><span>testes e documentação</span></div>
+        </div>
+        <p style="margin-top:20px; font-size:13px; color:var(--ink-soft);">Este projeto é open-source e foi desenvolvido com carinho para estudantes.</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  (function(){
+    // ===== SIDEBAR NAVEGAÇÃO =====
+    const botoesNav = document.querySelectorAll('#nav-principal button');
+    const botoesFooter = document.querySelectorAll('.footer-links button');
+    const todosBotoes = [...botoesNav, ...botoesFooter];
+    const panels = document.querySelectorAll('.panel');
+
+    function switchTo(tabId) {
+      // atualiza botões
+      todosBotoes.forEach(b => b.classList.remove('active'));
+      const botaoClicado = document.querySelector(`button[data-t="${tabId}"]`);
+      if (botaoClicado) botaoClicado.classList.add('active');
+
+      // mostra painel
+      panels.forEach(p => p.classList.add('hidden'));
+      const painelAlvo = document.querySelector(`.panel[data-p="${tabId}"]`);
+      if (painelAlvo) painelAlvo.classList.remove('hidden');
+    }
+
+    todosBotoes.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const tab = this.dataset.t;
+        if (tab) switchTo(tab);
+      });
+    });
+
+    // ===== POMODORO =====
+    const POMO_DURACAO = 25 * 60;
+    const CIRCUNFERENCIA = 2 * Math.PI * 68;
+    let pomoRestante = POMO_DURACAO;
+    let pomoRodando = false;
+    let pomoIntervalo = null;
+
+    const pomoTempoEl = document.getElementById('pomo-tempo');
+    const pomoProgressoEl = document.getElementById('pomo-progresso');
+    const pomoPlayBtn = document.getElementById('pomo-play');
+    const pomoResetBtn = document.getElementById('pomo-reset');
+    if (pomoProgressoEl) pomoProgressoEl.setAttribute('stroke-dasharray', CIRCUNFERENCIA.toFixed(1));
+
+    function pomoAtualizarTela() {
+      if (!pomoTempoEl) return;
+      const min = String(Math.floor(pomoRestante / 60)).padStart(2, '0');
+      const seg = String(pomoRestante % 60).padStart(2, '0');
+      pomoTempoEl.textContent = min + ':' + seg;
+      if (pomoProgressoEl) {
+        const fracaoRestante = pomoRestante / POMO_DURACAO;
+        pomoProgressoEl.style.strokeDashoffset = (CIRCUNFERENCIA * (1 - fracaoRestante)).toFixed(1);
+      }
+    }
+
+    function pomoTick() {
+      if (pomoRestante <= 0) {
+        clearInterval(pomoIntervalo);
+        pomoRodando = false;
+        if (pomoPlayBtn) pomoPlayBtn.textContent = 'Iniciar';
+        const lbl = document.getElementById('pomo-lbl');
+        if (lbl) lbl.textContent = 'CICLO CONCLUÍDO';
+        return;
+      }
+      pomoRestante -= 1;
+      pomoAtualizarTela();
+    }
+
+    if (pomoPlayBtn) {
+      pomoPlayBtn.addEventListener('click', () => {
+        pomoRodando = !pomoRodando;
+        if (pomoRodando) {
+          pomoPlayBtn.textContent = 'Pausar';
+          const lbl = document.getElementById('pomo-lbl');
+          if (lbl) lbl.textContent = 'FOCO · 25 MIN';
+          pomoIntervalo = setInterval(pomoTick, 1000);
+        } else {
+          pomoPlayBtn.textContent = 'Iniciar';
+          clearInterval(pomoIntervalo);
+        }
+      });
+    }
+    if (pomoResetBtn) {
+      pomoResetBtn.addEventListener('click', () => {
+        clearInterval(pomoIntervalo);
+        pomoRodando = false;
+        pomoRestante = POMO_DURACAO;
+        if (pomoPlayBtn) pomoPlayBtn.textContent = 'Iniciar';
+        const lbl = document.getElementById('pomo-lbl');
+        if (lbl) lbl.textContent = 'FOCO · 25 MIN';
+        pomoAtualizarTela();
+      });
+    }
+    pomoAtualizarTela();
+
+    // ===== OFICINA: ADICIONAR / REMOVER CARDS =====
+    const bancada = document.getElementById('bancadaCards');
+    const inputNova = document.getElementById('novaPecaInput');
+    const btnAdicionar = document.getElementById('adicionarPecaBtn');
+    const btnRemoverUltimo = document.getElementById('removerUltimaPecaBtn');
+    const contagemEl = document.getElementById('contagemPecas');
+    const resumoEl = document.getElementById('resumoStatus');
+
+    let nextId = 6; // já existem 6 estáticos
+
+    function atualizarRodape() {
+      const cards = bancada.querySelectorAll('.peca');
+      const total = cards.length;
+      const finalizados = bancada.querySelectorAll('.peca.pronta').length;
+      contagemEl.textContent = total + ' peças na bancada';
+      const producao = total - finalizados;
+      let resumo = '';
+      if (finalizados > 0) resumo += finalizados + ' finalizada' + (finalizados>1?'s':'') + ' · ';
+      resumo += producao + ' em produção';
+      resumoEl.textContent = resumo;
+    }
+
+    function criarCard(titulo, id) {
+      const div = document.createElement('div');
+      div.className = 'peca';
+      div.dataset.id = id;
+      const codigo = 'PC-' + String(id+1).padStart(2, '0') + ' · ' + titulo.substring(0,3).toUpperCase();
+      const pct = Math.floor(Math.random() * 41);
+      const pctText = pct + '% em produção';
+      const larguraBarra = pct + '%';
+      div.innerHTML = `
+        <div class="cod">${codigo}</div>
+        <h3>${titulo}</h3>
+        <div class="barra"><i style="width:${larguraBarra}"></i></div>
+        <div class="pct">${pctText}</div>
+      `;
+      return div;
+    }
+
+    function adicionarCard() {
+      const titulo = inputNova.value.trim();
+      if (titulo === '') {
+        alert('Digite o título do card (ex: Química — Ligações)');
+        return;
+      }
+      const id = nextId++;
+      const card = criarCard(titulo, id);
+      bancada.appendChild(card);
+      inputNova.value = '';
+      atualizarRodape();
+    }
+
+    function removerUltimoCard() {
+      const cards = bancada.querySelectorAll('.peca');
+      if (cards.length <= 6) {
+        alert('Os 6 cards iniciais não podem ser removidos. Adicione novos cards para removê-los.');
+        return;
+      }
+      const ultimo = cards[cards.length - 1];
+      if (ultimo) bancada.removeChild(ultimo);
+      atualizarRodape();
+    }
+
+    if (btnAdicionar) btnAdicionar.addEventListener('click', adicionarCard);
+    if (btnRemoverUltimo) btnRemoverUltimo.addEventListener('click', removerUltimoCard);
+    if (inputNova) {
+      inputNova.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); adicionarCard(); }
+      });
+    }
+    atualizarRodape();
+
+    // ===== INICIAL: ativa diário (já ativo) =====
+    // Garantir que o primeiro painel esteja visível
+    switchTo('diario');
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<style>
+  :root{
+    --bg:#F2EDE1; --surface:#FFFFFF; --ink:#0F3D3E; --ink-soft:#3C5B57;
+    --accent:#B8925A; --warn:#9C4A3C; --line:#C9BFA8;
+    --display: Georgia, 'Palatino Linotype', 'Book Antiqua', serif;
+    --body: 'Helvetica Neue', Arial, sans-serif;
+    --mono: 'Courier New', monospace;
+    --radius: 4px;
+  }
+  * { box-sizing:border-box; }
+  #app { background:var(--bg); color:var(--ink); font-family:var(--body); padding:0; min-height:600px; transition:background .35s ease, color .35s ease; border-radius:12px; overflow:hidden; }
+
+  .switcher { display:flex; gap:0; flex-wrap:wrap; background:#1a1a1a; padding:6px; }
+  .switcher button {
+    flex:1; min-width:110px; padding:10px 8px; background:transparent; border:none; color:#999;
+    font-family:var(--body); font-size:12.5px; cursor:pointer; border-radius:3px; transition:.2s;
+  }
+  .switcher button.active { background:#fff; color:#111; font-weight:600; }
+  .switcher button:hover:not(.active) { color:#ddd; }
+
+  .stage { padding:36px 40px 44px; }
+  @media (max-width:640px){ .stage{ padding:22px 18px 30px; } .switcher button{min-width:33%; font-size:11px;} }
+
+  h1,h2,h3 { margin:0; font-weight:normal; }
+  .hidden { display:none; }
+
+  /* ---------- 1. DIÁRIO DE BORDO ---------- */
+  .t-diario .stage { background:var(--bg); }
+  .t-diario .masthead { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:30px; }
+  .t-diario .masthead h1 { font-family:var(--display); font-size:30px; letter-spacing:.3px; color:var(--ink); }
+  .t-diario .masthead .coord { font-family:var(--mono); font-size:11px; color:var(--ink-soft); text-align:right; line-height:1.6; }
+  .t-diario .grid { display:grid; grid-template-columns:1.6fr 1fr; gap:36px; }
+  .t-diario .rota { position:relative; padding-left:26px; }
+  .t-diario .rota::before { content:''; position:absolute; left:6px; top:6px; bottom:6px; width:1px; background:var(--line); }
+  .t-diario .porto { position:relative; padding-bottom:26px; }
+  .t-diario .porto::before { content:''; position:absolute; left:-26px; top:3px; width:9px; height:9px; border-radius:50%; background:var(--surface); border:2px solid var(--accent); }
+  .t-diario .porto.feito::before { background:var(--accent); }
+  .t-diario .porto .hora { font-family:var(--mono); font-size:11px; color:var(--ink-soft); }
+  .t-diario .porto .nome { font-family:var(--display); font-size:19px; margin-top:2px; }
+  .t-diario .porto .nota { font-size:13px; color:var(--ink-soft); margin-top:3px; }
+  .t-diario .instrumento { position:relative; width:150px; height:150px; margin:0 auto 20px; }
+  .t-diario .instrumento svg { transform:rotate(-90deg); }
+  .t-diario .instrumento .trilha { fill:none; stroke:var(--line); stroke-width:3; }
+  .t-diario .instrumento .progresso { fill:none; stroke:var(--accent); stroke-width:3; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+  .t-diario .instrumento .miolo { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  .t-diario .instrumento .num { font-family:var(--display); font-size:32px; }
+  .t-diario .instrumento .lbl { font-size:10px; color:var(--ink-soft); margin-top:2px; }
+  .t-diario .comandos { display:flex; gap:8px; justify-content:center; margin-bottom:20px; }
+  .t-diario .comandos button { font-family:var(--mono); font-size:11px; background:none; border:1px solid var(--line); color:var(--ink); padding:6px 12px; border-radius:20px; cursor:pointer; }
+  .t-diario .comandos button:hover { border-color:var(--accent); color:var(--accent); }
+  .t-diario .registro { font-family:var(--mono); font-size:12px; line-height:2; color:var(--ink-soft); border-top:1px solid var(--line); padding-top:14px; }
+
+  /* ---------- 2. OFICINA ---------- */
+  .t-oficina .stage { background:#EAEAE6; background-image:linear-gradient(#D8D8D2 1px, transparent 1px), linear-gradient(90deg, #D8D8D2 1px, transparent 1px); background-size:22px 22px; }
+  .t-oficina .masthead { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+  .t-oficina h1 { font-family:var(--mono); font-size:20px; color:#20211F; letter-spacing:.5px; }
+  .t-oficina .ordem { font-family:var(--mono); font-size:11px; background:#E7B93B; color:#20211F; padding:4px 9px; border-radius:2px; }
+  .t-oficina .bancada { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .t-oficina .peca { background:#fff; border:1.5px solid #20211F; padding:14px; position:relative; }
+  .t-oficina .peca .cod { font-family:var(--mono); font-size:10px; color:#8A8A82; }
+  .t-oficina .peca h3 { font-family:var(--body); font-weight:600; font-size:15px; margin:6px 0 8px; color:#20211F; }
+  .t-oficina .barra { height:6px; background:#E3E3DC; border-radius:2px; overflow:hidden; }
+  .t-oficina .barra i { display:block; height:100%; background:#20211F; }
+  .t-oficina .peca .pct { font-family:var(--mono); font-size:10px; margin-top:5px; color:#5a5a54; }
+  .t-oficina .peca.pronta { background:#20211F; }
+  .t-oficina .peca.pronta .cod, .t-oficina .peca.pronta h3, .t-oficina .peca.pronta .pct { color:#E7B93B; }
+  .t-oficina .rodape { margin-top:20px; font-family:var(--mono); font-size:11px; color:#5a5a54; display:flex; justify-content:space-between; border-top:1.5px dashed #20211F; padding-top:12px; }
+
+  /* ---------- 3. ESTAÇÃO METEOROLÓGICA ---------- */
+  .t-clima .stage { background:#EFF3F5; }
+  .t-clima .masthead h1 { font-family:var(--display); font-style:italic; font-size:26px; color:#2C4A5E; }
+  .t-clima .masthead .data { font-size:12px; color:#6D8595; margin-top:2px; }
+  .t-clima .medidores { display:flex; gap:16px; margin:26px 0 30px; }
+  .t-clima .medidor { flex:1; background:#fff; border-radius:10px; padding:16px 14px; box-shadow:0 1px 0 #D9E2E7; }
+  .t-clima .medidor .v { font-family:var(--display); font-size:28px; color:#2C4A5E; }
+  .t-clima .medidor .k { font-size:11px; color:#6D8595; margin-top:2px; }
+  .t-clima .previsao .dia { display:flex; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid #DCE5E9; }
+  .t-clima .previsao .dia:last-child{ border-bottom:none; }
+  .t-clima .previsao .rotulo { width:64px; font-size:12px; color:#6D8595; }
+  .t-clima .previsao .icone { width:28px; text-align:center; font-size:16px; }
+  .t-clima .previsao .desc { flex:1; font-size:14px; color:#2C4A5E; }
+  .t-clima .previsao .temp { font-family:var(--mono); font-size:12px; color:#6D8595; }
+
+  /* ---------- 4. HERBÁRIO ---------- */
+  .t-herbario .stage { background:#F4F1E8; }
+  .t-herbario .masthead h1 { font-family:var(--display); font-size:24px; color:#3E4A34; }
+  .t-herbario .masthead .sub { font-size:12px; font-style:italic; color:#7C8267; }
+  .t-herbario .colecao { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:26px; }
+  .t-herbario .especime { border:1px solid #C9CBB0; padding:16px; background:#FBFAF3; position:relative; }
+  .t-herbario .especime::after{ content:''; position:absolute; top:6px; right:6px; width:5px; height:5px; border-radius:50%; background:#8A9169; }
+  .t-herbario .especime.colhido::after{ background:#B0653B; }
+  .t-herbario .num { font-family:var(--mono); font-size:10px; color:#8A9169; }
+  .t-herbario .nome { font-family:var(--display); font-style:italic; font-size:17px; color:#3E4A34; margin:5px 0 8px; }
+  .t-herbario .obs { font-size:12px; color:#6C715A; line-height:1.5; }
+  .t-herbario .rodape { margin-top:22px; text-align:center; font-size:11px; letter-spacing:.5px; color:#8A9169; }
+
+  /* ---------- 5. RÁDIO ---------- */
+  .t-radio .stage { background:#1E1812; color:#EADFC8; }
+  .t-radio .masthead h1 { font-family:var(--display); font-size:24px; color:#EADFC8; }
+  .t-radio .masthead .freq { font-family:var(--mono); font-size:12px; color:#C98A3B; margin-top:2px; }
+  .t-radio .dial { height:3px; background:#3A2F22; margin:22px 0 28px; position:relative; border-radius:2px; }
+  .t-radio .dial i { position:absolute; top:-5px; width:2px; height:13px; background:#5A4B37; }
+  .t-radio .dial .agulha { position:absolute; top:-8px; width:2px; height:19px; background:#C98A3B; }
+  .t-radio .estacoes .estacao { display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid #3A2F22; }
+  .t-radio .estacoes .estacao:last-child{ border:none; }
+  .t-radio .estacoes .num { font-family:var(--mono); font-size:12px; color:#C98A3B; width:46px; }
+  .t-radio .estacoes .nome { flex:1; font-size:14.5px; }
+  .t-radio .onda { display:flex; gap:2px; align-items:flex-end; height:16px; }
+  .t-radio .onda span { width:2.5px; background:#C98A3B; opacity:.85; }
+
+  /* ---------- 6. CONFEITARIA ---------- */
+  .t-confeitaria .stage { background:#FBF3EC; }
+  .t-confeitaria .masthead { text-align:center; margin-bottom:26px; }
+  .t-confeitaria .masthead h1 { font-family:var(--display); font-style:italic; font-size:28px; color:#7A3B34; }
+  .t-confeitaria .masthead .sub { font-size:12px; color:#B08A72; margin-top:4px; }
+  .t-confeitaria .receitas { display:flex; flex-direction:column; gap:14px; }
+  .t-confeitaria .receita { background:#fff; border:1px dashed #D9BFAE; border-radius:8px; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; }
+  .t-confeitaria .receita .info h3 { font-family:var(--display); font-size:17px; color:#5C3A32; }
+  .t-confeitaria .receita .info .ingred { font-size:12px; color:#A9856F; margin-top:3px; }
+  .t-confeitaria .receita .tempo { font-family:var(--mono); font-size:12px; color:#7A3B34; background:#F6E4D8; padding:5px 10px; border-radius:20px; }
+</style>
+
+<div id="app" class="t-diario">
+  <div class="switcher">
+    <button class="active" data-t="diario">Diário de bordo</button>
+    <button data-t="oficina">Oficina</button>
+    <button data-t="clima">Estação meteorológica</button>
+    <button data-t="herbario">Herbário</button>
+    <button data-t="radio">Rádio</button>
+    <button data-t="confeitaria">Confeitaria</button>
+  </div>
+
+  <div class="stage">
+
+    <!-- 1 DIÁRIO DE BORDO -->
+    <div class="panel" data-p="diario">
+      <div class="masthead">
+        <h1>Diário de bordo</h1>
+        <div class="coord">SEMANA 14 · TERÇA-FEIRA<br>3 portos visitados de 5</div>
+      </div>
+      <div class="grid">
+        <div class="rota">
+          <div class="porto feito"><div class="hora">07h40</div><div class="nome">Matemática — Funções</div><div class="nota">Exercícios 12 a 20 concluídos</div></div>
+          <div class="porto feito"><div class="hora">09h15</div><div class="nome">História — Era Vargas</div><div class="nota">Resumo do capítulo 6</div></div>
+          <div class="porto feito"><div class="hora">14h00</div><div class="nome">Inglês — Present Perfect</div><div class="nota">20 frases traduzidas</div></div>
+          <div class="porto"><div class="hora">16h30</div><div class="nome">Biologia — Genética</div><div class="nota">Revisar cruzamentos de Mendel</div></div>
+          <div class="porto"><div class="hora">19h00</div><div class="nome">Redação — Dissertação</div><div class="nota">Rascunho da introdução</div></div>
+        </div>
+        <div>
+          <div class="instrumento">
+            <svg width="150" height="150" viewBox="0 0 150 150">
+              <circle class="trilha" cx="75" cy="75" r="68"></circle>
+              <circle id="pomo-progresso" class="progresso" cx="75" cy="75" r="68"
+                stroke-dasharray="427.3" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="miolo">
+              <div class="num" id="pomo-tempo">25:00</div>
+              <div class="lbl" id="pomo-lbl">FOCO · 25 MIN</div>
+            </div>
+          </div>
+          <div class="comandos">
+            <button id="pomo-play">Iniciar</button>
+            <button id="pomo-reset">Reiniciar</button>
+          </div>
+          <div class="registro">
+            Sequência atual: 9 dias<br>
+            Melhor marca: 14 dias<br>
+            Próxima prova: Biologia, 6 dias
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 OFICINA -->
+    <div class="panel hidden" data-p="oficina">
+      <div class="masthead">
+        <h1>OFICINA DE ESTUDOS</h1>
+        <div class="ordem">OS Nº 0142</div>
+      </div>
+      <div class="bancada">
+        <div class="peca pronta"><div class="cod">PC-01 · MAT</div><h3>Funções quadráticas</h3><div class="barra"><i style="width:100%"></i></div><div class="pct">100% — finalizada</div></div>
+        <div class="peca"><div class="cod">PC-02 · HIS</div><h3>Era Vargas</h3><div class="barra"><i style="width:70%"></i></div><div class="pct">70% em produção</div></div>
+        <div class="peca"><div class="cod">PC-03 · ING</div><h3>Present Perfect</h3><div class="barra"><i style="width:45%"></i></div><div class="pct">45% em produção</div></div>
+        <div class="peca"><div class="cod">PC-04 · BIO</div><h3>Genética mendeliana</h3><div class="barra"><i style="width:20%"></i></div><div class="pct">20% em produção</div></div>
+        <div class="peca"><div class="cod">PC-05 · RED</div><h3>Dissertação ENEM</h3><div class="barra"><i style="width:10%"></i></div><div class="pct">10% em produção</div></div>
+        <div class="peca"><div class="cod">PC-06 · FIS</div><h3>Leis de Newton</h3><div class="barra"><i style="width:0%"></i></div><div class="pct">na fila</div></div>
+      </div>
+      <div class="rodape"><span>6 peças na bancada</span><span>1 finalizada · 4 em produção · 1 na fila</span></div>
+    </div>
+
+    <!-- 3 CLIMA -->
+    <div class="panel hidden" data-p="clima">
+      <div class="masthead">
+        <h1>Estação de estudos</h1>
+        <div class="data">Boletim de terça-feira, 14ª semana do semestre</div>
+      </div>
+      <div class="medidores">
+        <div class="medidor"><div class="v">72%</div><div class="k">carga cumprida na semana</div></div>
+        <div class="medidor"><div class="v">3h40</div><div class="k">tempo de estudo hoje</div></div>
+        <div class="medidor"><div class="v">9</div><div class="k">dias seguidos de foco</div></div>
+      </div>
+      <div class="previsao">
+        <div class="dia"><span class="rotulo">Hoje</span><span class="icone">☀︎</span><span class="desc">Céu limpo — boa concentração prevista</span><span class="temp">3 tarefas</span></div>
+        <div class="dia"><span class="rotulo">Amanhã</span><span class="icone">☁︎</span><span class="desc">Parcialmente nublado — revisão de Física</span><span class="temp">2 tarefas</span></div>
+        <div class="dia"><span class="rotulo">Quinta</span><span class="icone">⛈</span><span class="desc">Tempestade de provas — Biologia N1</span><span class="temp">prova</span></div>
+        <div class="dia"><span class="rotulo">Sexta</span><span class="icone">☀︎</span><span class="desc">Aberto — dia de folga programada</span><span class="temp">0 tarefas</span></div>
+      </div>
+    </div>
+
+    <!-- 4 HERBÁRIO -->
+    <div class="panel hidden" data-p="herbario">
+      <div class="masthead">
+        <h1>Herbário de estudos</h1>
+        <div class="sub">coleção da 14ª semana</div>
+      </div>
+      <div class="colecao">
+        <div class="especime colhido"><div class="num">Nº 031</div><div class="nome">Functio quadratica</div><div class="obs">Colhida em 25/08. Reconhecível pela concavidade da parábola.</div></div>
+        <div class="especime"><div class="num">Nº 032</div><div class="nome">Era vargensis</div><div class="obs">Em observação — floresce entre 1930 e 1945.</div></div>
+        <div class="especime"><div class="num">Nº 033</div><div class="nome">Praesens perfectum</div><div class="obs">Espécime resistente, requer prática diária.</div></div>
+        <div class="especime"><div class="num">Nº 034</div><div class="nome">Genetica mendeliana</div><div class="obs">Ainda não catalogada — cruzamentos pendentes.</div></div>
+      </div>
+      <div class="rodape">2 espécimes colhidos · 2 em observação</div>
+    </div>
+
+    <!-- 5 RADIO -->
+    <div class="panel hidden" data-p="radio">
+      <div class="masthead">
+        <h1>Sintonia de estudos</h1>
+        <div class="freq">92.7 FM — no ar há 3h40 hoje</div>
+      </div>
+      <div class="dial"><i style="left:10%"></i><i style="left:30%"></i><i style="left:50%"></i><i style="left:70%"></i><i style="left:90%"></i><div class="agulha" style="left:63%"></div></div>
+      <div class="estacoes">
+        <div class="estacao"><span class="num">88.3</span><span class="nome">Matemática — Funções</span><div class="onda"><span style="height:14px"></span><span style="height:9px"></span><span style="height:16px"></span><span style="height:6px"></span></div></div>
+        <div class="estacao"><span class="num">94.1</span><span class="nome">História — Era Vargas</span><div class="onda"><span style="height:11px"></span><span style="height:15px"></span><span style="height:8px"></span><span style="height:12px"></span></div></div>
+        <div class="estacao"><span class="num">101.5</span><span class="nome">Inglês — Present Perfect</span><div class="onda"><span style="height:7px"></span><span style="height:13px"></span><span style="height:10px"></span><span style="height:5px"></span></div></div>
+        <div class="estacao"><span class="num">106.9</span><span class="nome">Biologia — Genética</span><div class="onda"><span style="height:5px"></span><span style="height:8px"></span><span style="height:4px"></span><span style="height:6px"></span></div></div>
+      </div>
+    </div>
+
+    <!-- 6 CONFEITARIA -->
+    <div class="panel hidden" data-p="confeitaria">
+      <div class="masthead">
+        <h1>Receitas da semana</h1>
+        <div class="sub">o que colocar no forno hoje</div>
+      </div>
+      <div class="receitas">
+        <div class="receita"><div class="info"><h3>Funções quadráticas</h3><div class="ingred">2 xícaras de exercícios · 1 colher de revisão teórica</div></div><div class="tempo">40 min</div></div>
+        <div class="receita"><div class="info"><h3>Era Vargas</h3><div class="ingred">1 resumo do capítulo · mapas mentais a gosto</div></div><div class="tempo">35 min</div></div>
+        <div class="receita"><div class="info"><h3>Present Perfect</h3><div class="ingred">20 frases traduzidas · flashcards frescos</div></div><div class="tempo">25 min</div></div>
+        <div class="receita"><div class="info"><h3>Genética mendeliana</h3><div class="ingred">cruzamentos de Mendel · uma pitada de exercícios</div></div><div class="tempo">50 min</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const POMO_DURACAO = 25 * 60;
+  const CIRCUNFERENCIA = 2 * Math.PI * 68;
+  let pomoRestante = POMO_DURACAO;
+  let pomoRodando = false;
+  let pomoIntervalo = null;
+
+  const pomoTempoEl = document.getElementById('pomo-tempo');
+  const pomoProgressoEl = document.getElementById('pomo-progresso');
+  const pomoPlayBtn = document.getElementById('pomo-play');
+  const pomoResetBtn = document.getElementById('pomo-reset');
+  pomoProgressoEl.setAttribute('stroke-dasharray', CIRCUNFERENCIA.toFixed(1));
+
+  function pomoAtualizarTela() {
+    const min = String(Math.floor(pomoRestante / 60)).padStart(2, '0');
+    const seg = String(pomoRestante % 60).padStart(2, '0');
+    pomoTempoEl.textContent = min + ':' + seg;
+    const fracaoRestante = pomoRestante / POMO_DURACAO;
+    pomoProgressoEl.style.strokeDashoffset = (CIRCUNFERENCIA * (1 - fracaoRestante)).toFixed(1);
+  }
+
+  function pomoTick() {
+    if (pomoRestante <= 0) {
+      clearInterval(pomoIntervalo);
+      pomoRodando = false;
+      pomoPlayBtn.textContent = 'Iniciar';
+      document.getElementById('pomo-lbl').textContent = 'CICLO CONCLUÍDO';
+      return;
+    }
+    pomoRestante -= 1;
+    pomoAtualizarTela();
+  }
+
+  pomoPlayBtn.addEventListener('click', () => {
+    pomoRodando = !pomoRodando;
+    if (pomoRodando) {
+      pomoPlayBtn.textContent = 'Pausar';
+      document.getElementById('pomo-lbl').textContent = 'FOCO · 25 MIN';
+      pomoIntervalo = setInterval(pomoTick, 1000);
+    } else {
+      pomoPlayBtn.textContent = 'Iniciar';
+      clearInterval(pomoIntervalo);
+    }
+  });
+
+  pomoResetBtn.addEventListener('click', () => {
+    clearInterval(pomoIntervalo);
+    pomoRodando = false;
+    pomoRestante = POMO_DURACAO;
+    pomoPlayBtn.textContent = 'Iniciar';
+    document.getElementById('pomo-lbl').textContent = 'FOCO · 25 MIN';
+    pomoAtualizarTela();
+  });
+
+  pomoAtualizarTela();
+
+  const app = document.getElementById('app');
+  document.querySelectorAll('.switcher button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.t;
+      document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+      document.querySelector('.panel[data-p="' + t + '"]').classList.remove('hidden');
+      app.className = 't-' + t;
+    });
+  });
+</script>
