@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estúdio · painel lateral</title>
+  <title>Estúdio · remover concluídos + horário real</title>
   <style>
     * { box-sizing: border-box; margin:0; padding:0; }
     :root{
@@ -32,7 +32,6 @@
       min-height:100vh;
       background:var(--bg);
     }
-    /* ===== SIDEBAR ===== */
     .sidebar {
       width: var(--sidebar-width);
       background: #ECE7D5;
@@ -127,7 +126,6 @@
       border-left-color:var(--accent);
     }
 
-    /* ===== CONTEÚDO ===== */
     .main-content {
       flex:1;
       padding:28px 36px 40px 36px;
@@ -144,7 +142,6 @@
     .panel.hidden { display:none; }
     @keyframes fadeIn { 0%{opacity:0.4;} 100%{opacity:1;} }
 
-    /* ===== estilos internos (cards, oficina, etc) ===== */
     .masthead {
       border-bottom:1px solid var(--mint-strong);
       padding-bottom:14px;
@@ -282,6 +279,7 @@
       border:1px solid var(--mint-strong);
       padding:17px;
       box-shadow:3px 3px 0 rgba(188,232,221,.7);
+      transition:0.2s;
     }
     .peca h3 {
       font-family:var(--display);
@@ -340,6 +338,8 @@
     .ferramenta button:hover { background:var(--accent); border-color:var(--accent); box-shadow:2px 2px 0 var(--ink); }
     .ferramenta button.remover { background:transparent; box-shadow:none; border-color:#d4c9b8; color:var(--ink-soft); }
     .ferramenta button.remover:hover { background:#f0e3d4; border-color:var(--warn); color:var(--warn); }
+    .ferramenta button.danger { background:#f0e3d4; border-color:var(--warn); color:var(--warn); }
+    .ferramenta button.danger:hover { background:var(--warn); color:#fff; border-color:var(--warn); }
     .rodape {
       border-top:1px dashed var(--mint-strong);
       margin-top:12px;
@@ -389,7 +389,6 @@
     .receita .info .ingred { color:var(--ink-soft); font-size:12px; margin-top:3px; }
     .receita .tempo { color:var(--ink); background:var(--mint); border:1px solid var(--mint-strong); padding:5px 10px; font-family:var(--mono); font-size:12px; }
 
-    /* TUTORIAL e EQUIPE (páginas especiais) */
     .tutorial-box, .equipe-box {
       max-width:760px;
       margin:0 auto;
@@ -451,9 +450,8 @@
 </head>
 <body>
 <div id="app">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="logo">Estúdio <small>painel de bordo</small></div>
+    <div class="logo">Estúdio <small>remover concluídos</small></div>
     <nav id="nav-principal">
       <button class="active" data-t="diario">Diário</button>
       <button data-t="oficina">Oficina</button>
@@ -463,27 +461,21 @@
       <button data-t="confeitaria">Confeitaria</button>
     </nav>
     <div class="footer-links">
-      <button data-t="tutorial" id="btn-tutorial">📖 Tutorial</button>
-      <button data-t="equipe" id="btn-equipe">👥 Equipe</button>
+      <button data-t="tutorial">📖 Tutorial</button>
+      <button data-t="equipe">👥 Equipe</button>
     </div>
   </aside>
 
-  <!-- CONTEÚDO PRINCIPAL -->
   <main class="main-content">
-
-    <!-- ===== DIÁRIO ===== -->
+    <!-- DIÁRIO -->
     <div class="panel" data-p="diario">
       <div class="masthead">
         <h1>Diário de bordo</h1>
-        <div class="coord">SEMANA 14 · TERÇA-FEIRA<br>3 portos visitados de 5</div>
+        <div class="coord" id="diario-status">SEMANA 14 · TERÇA-FEIRA<br><span id="contagem-portos">0</span> portos visitados</div>
       </div>
       <div class="grid-diario">
-        <div class="rota">
-          <div class="porto feito"><div class="hora">07h40</div><div class="nome">Matemática — Funções</div><div class="nota">Exercícios 12 a 20 concluídos</div></div>
-          <div class="porto feito"><div class="hora">09h15</div><div class="nome">História — Era Vargas</div><div class="nota">Resumo do capítulo 6</div></div>
-          <div class="porto feito"><div class="hora">14h00</div><div class="nome">Inglês — Present Perfect</div><div class="nota">20 frases traduzidas</div></div>
-          <div class="porto"><div class="hora">16h30</div><div class="nome">Biologia — Genética</div><div class="nota">Revisar cruzamentos de Mendel</div></div>
-          <div class="porto"><div class="hora">19h00</div><div class="nome">Redação — Dissertação</div><div class="nota">Rascunho da introdução</div></div>
+        <div class="rota" id="rota-diario">
+          <div style="color:var(--ink-soft); font-style:italic; padding:10px 0;" id="mensagem-vazio">Nenhum card na oficina ainda. Adicione na aba Oficina.</div>
         </div>
         <div>
           <div class="instrumento">
@@ -500,100 +492,85 @@
             <button id="pomo-play">Iniciar</button>
             <button id="pomo-reset">Reiniciar</button>
           </div>
-          <div class="registro">Sequência atual: 9 dias<br>Melhor marca: 14 dias<br>Próxima prova: Biologia, 6 dias</div>
+          <div class="registro" id="registro-diario">
+            Sequência atual: 9 dias<br>
+            Melhor marca: 14 dias<br>
+            Próxima prova: Biologia, 6 dias
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ===== OFICINA ===== -->
+    <!-- OFICINA -->
     <div class="panel hidden" data-p="oficina">
       <div class="masthead"><h1>OFICINA DE ESTUDOS</h1><div class="ordem">OS Nº 0142</div></div>
       <div class="ferramenta">
         <input type="text" id="novaPecaInput" placeholder="Ex: Química — Ligações" value="">
         <button id="adicionarPecaBtn">+ Adicionar card</button>
-        <button id="removerUltimaPecaBtn" class="remover">✕ remover último</button>
+        <button id="removerConcluidosBtn" class="danger">🗑 Remover concluídos</button>
       </div>
       <div class="bancada" id="bancadaCards">
-        <div class="peca pronta" data-id="0"><div class="cod">PC-01 · MAT</div><h3>Funções quadráticas</h3><div class="barra"><i style="width:100%"></i></div><div class="pct">100% — finalizada</div></div>
-        <div class="peca" data-id="1"><div class="cod">PC-02 · HIS</div><h3>Era Vargas</h3><div class="barra"><i style="width:70%"></i></div><div class="pct">70% em produção</div></div>
-        <div class="peca" data-id="2"><div class="cod">PC-03 · ING</div><h3>Present Perfect</h3><div class="barra"><i style="width:45%"></i></div><div class="pct">45% em produção</div></div>
-        <div class="peca" data-id="3"><div class="cod">PC-04 · BIO</div><h3>Genética mendeliana</h3><div class="barra"><i style="width:20%"></i></div><div class="pct">20% em produção</div></div>
-        <div class="peca" data-id="4"><div class="cod">PC-05 · RED</div><h3>Dissertação ENEM</h3><div class="barra"><i style="width:10%"></i></div><div class="pct">10% em produção</div></div>
-        <div class="peca" data-id="5"><div class="cod">PC-06 · FIS</div><h3>Leis de Newton</h3><div class="barra"><i style="width:0%"></i></div><div class="pct">na fila</div></div>
+        <div class="peca" data-id="5" data-titulo="Leis de Newton" data-timestamp="5"><div class="cod">PC-06 · FIS</div><h3>Leis de Newton</h3><div class="barra"><i style="width:0%"></i></div><div class="pct">na fila</div></div>
+        <div class="peca" data-id="4" data-titulo="Dissertação ENEM" data-timestamp="4"><div class="cod">PC-05 · RED</div><h3>Dissertação ENEM</h3><div class="barra"><i style="width:10%"></i></div><div class="pct">10% em produção</div></div>
+        <div class="peca" data-id="3" data-titulo="Genética mendeliana" data-timestamp="3"><div class="cod">PC-04 · BIO</div><h3>Genética mendeliana</h3><div class="barra"><i style="width:20%"></i></div><div class="pct">20% em produção</div></div>
+        <div class="peca" data-id="2" data-titulo="Present Perfect" data-timestamp="2"><div class="cod">PC-03 · ING</div><h3>Present Perfect</h3><div class="barra"><i style="width:45%"></i></div><div class="pct">45% em produção</div></div>
+        <div class="peca" data-id="1" data-titulo="Era Vargas" data-timestamp="1"><div class="cod">PC-02 · HIS</div><h3>Era Vargas</h3><div class="barra"><i style="width:70%"></i></div><div class="pct">70% em produção</div></div>
+        <div class="peca pronta" data-id="0" data-titulo="Funções quadráticas" data-timestamp="0"><div class="cod">PC-01 · MAT</div><h3>Funções quadráticas</h3><div class="barra"><i style="width:100%"></i></div><div class="pct">100% — finalizada</div></div>
       </div>
       <div class="rodape"><span id="contagemPecas">6 peças na bancada</span><span id="resumoStatus">1 finalizada · 4 em produção · 1 na fila</span></div>
     </div>
 
-    <!-- ===== CLIMA ===== -->
+    <!-- CLIMA -->
     <div class="panel hidden" data-p="clima">
       <div class="masthead"><h1>Estação de estudos</h1><div class="data">Boletim de terça-feira, 14ª semana</div></div>
       <div class="medidores">
-        <div class="medidor"><div class="v">72%</div><div class="k">carga cumprida na semana</div></div>
-        <div class="medidor"><div class="v">3h40</div><div class="k">tempo de estudo hoje</div></div>
-        <div class="medidor"><div class="v">9</div><div class="k">dias seguidos de foco</div></div>
+        <div class="medidor"><div class="v" id="clima-carga">72%</div><div class="k">carga cumprida na semana</div></div>
+        <div class="medidor"><div class="v" id="clima-tempo">3h40</div><div class="k">tempo de estudo hoje</div></div>
+        <div class="medidor"><div class="v" id="clima-dias">9</div><div class="k">dias seguidos de foco</div></div>
       </div>
       <div class="previsao">
-        <div class="dia"><span class="rotulo">Hoje</span><span class="icone">☀︎</span><span class="desc">Céu limpo — boa concentração</span><span class="temp">3 tarefas</span></div>
+        <div class="dia"><span class="rotulo">Hoje</span><span class="icone">☀︎</span><span class="desc">Céu limpo — boa concentração</span><span class="temp" id="previsao-hoje">3 tarefas</span></div>
         <div class="dia"><span class="rotulo">Amanhã</span><span class="icone">☁︎</span><span class="desc">Parcialmente nublado — revisão de Física</span><span class="temp">2 tarefas</span></div>
         <div class="dia"><span class="rotulo">Quinta</span><span class="icone">⛈</span><span class="desc">Tempestade de provas — Biologia N1</span><span class="temp">prova</span></div>
         <div class="dia"><span class="rotulo">Sexta</span><span class="icone">☀︎</span><span class="desc">Aberto — dia de folga programada</span><span class="temp">0 tarefas</span></div>
       </div>
     </div>
 
-    <!-- ===== HERBÁRIO ===== -->
+    <!-- HERBÁRIO -->
     <div class="panel hidden" data-p="herbario">
       <div class="masthead"><h1>Herbário de estudos</h1><div class="sub">coleção da 14ª semana</div></div>
-      <div class="colecao">
-        <div class="especime"><div class="num">Nº 031</div><div class="nome">Functio quadratica</div><div class="obs">Colhida em 25/08. Reconhecível pela concavidade da parábola.</div></div>
-        <div class="especime"><div class="num">Nº 032</div><div class="nome">Era vargensis</div><div class="obs">Em observação — floresce entre 1930 e 1945.</div></div>
-        <div class="especime"><div class="num">Nº 033</div><div class="nome">Praesens perfectum</div><div class="obs">Espécime resistente, requer prática diária.</div></div>
-        <div class="especime"><div class="num">Nº 034</div><div class="nome">Genetica mendeliana</div><div class="obs">Ainda não catalogada — cruzamentos pendentes.</div></div>
-      </div>
-      <div class="rodape" style="margin-top:22px; justify-content:center;">2 espécimes colhidos · 2 em observação</div>
+      <div class="colecao" id="colecao-herbario"></div>
+      <div class="rodape" style="margin-top:22px; justify-content:center;" id="rodape-herbario">0 espécimes catalogados</div>
     </div>
 
-    <!-- ===== RÁDIO ===== -->
+    <!-- RÁDIO -->
     <div class="panel hidden" data-p="radio">
       <div class="masthead"><h1>Sintonia de estudos</h1><div class="freq">92.7 FM — no ar há 3h40 hoje</div></div>
       <div class="dial"><i style="left:10%"></i><i style="left:30%"></i><i style="left:50%"></i><i style="left:70%"></i><i style="left:90%"></i><div class="agulha" style="left:63%"></div></div>
-      <div class="estacoes">
-        <div class="estacao"><span class="num">88.3</span><span class="nome">Matemática — Funções</span><div class="onda"><span style="height:14px"></span><span style="height:9px"></span><span style="height:16px"></span><span style="height:6px"></span></div></div>
-        <div class="estacao"><span class="num">94.1</span><span class="nome">História — Era Vargas</span><div class="onda"><span style="height:11px"></span><span style="height:15px"></span><span style="height:8px"></span><span style="height:12px"></span></div></div>
-        <div class="estacao"><span class="num">101.5</span><span class="nome">Inglês — Present Perfect</span><div class="onda"><span style="height:7px"></span><span style="height:13px"></span><span style="height:10px"></span><span style="height:5px"></span></div></div>
-        <div class="estacao"><span class="num">106.9</span><span class="nome">Biologia — Genética</span><div class="onda"><span style="height:5px"></span><span style="height:8px"></span><span style="height:4px"></span><span style="height:6px"></span></div></div>
-      </div>
+      <div class="estacoes" id="estacoes-radio"></div>
     </div>
 
-    <!-- ===== CONFEITARIA ===== -->
+    <!-- CONFEITARIA -->
     <div class="panel hidden" data-p="confeitaria">
       <div class="masthead"><h1>Receitas da semana</h1><div class="sub">o que colocar no forno hoje</div></div>
-      <div class="receitas">
-        <div class="receita"><div class="info"><h3>Funções quadráticas</h3><div class="ingred">2 xícaras de exercícios · 1 colher de revisão teórica</div></div><div class="tempo">40 min</div></div>
-        <div class="receita"><div class="info"><h3>Era Vargas</h3><div class="ingred">1 resumo do capítulo · mapas mentais a gosto</div></div><div class="tempo">35 min</div></div>
-        <div class="receita"><div class="info"><h3>Present Perfect</h3><div class="ingred">20 frases traduzidas · flashcards frescos</div></div><div class="tempo">25 min</div></div>
-        <div class="receita"><div class="info"><h3>Genética mendeliana</h3><div class="ingred">cruzamentos de Mendel · uma pitada de exercícios</div></div><div class="tempo">50 min</div></div>
-      </div>
+      <div class="receitas" id="receitas-confeitaria"></div>
     </div>
 
-    <!-- ===== TUTORIAL ===== -->
+    <!-- TUTORIAL -->
     <div class="panel hidden" data-p="tutorial">
       <div class="tutorial-box">
         <h2>📖 Como usar o painel</h2>
-        <p>Bem-vindo ao <strong>Estúdio</strong> — seu painel de bordo para organizar os estudos.</p>
+        <p><strong>Novidades:</strong></p>
         <ul>
-          <li><strong>Diário:</strong> acompanhe sua rota de estudos diários, com portos (tarefas) e o pomodoro integrado.</li>
-          <li><strong>Oficina:</strong> gerencie cards de conteúdo. Use o campo para <em>adicionar</em> novos cards e o botão para <em>remover</em> o último adicionado.</li>
-          <li><strong>Clima:</strong> visualize métricas gerais e a previsão de tarefas dos próximos dias.</li>
-          <li><strong>Herbário:</strong> uma coleção visual de “espécimes” de estudo — cada matéria catalogada.</li>
-          <li><strong>Rádio:</strong> sintonize diferentes disciplinas, com ondas que representam a intensidade do foco.</li>
-          <li><strong>Confeitaria:</strong> receitas de estudo com ingredientes (atividades) e tempo estimado.</li>
+          <li><strong>Remover concluídos:</strong> o botão na Oficina remove todos os cards marcados como "finalizados".</li>
+          <li><strong>Horário real:</strong> no Diário, cada novo card recebe o horário atual (aproximado) em que foi adicionado.</li>
+          <li><strong>Ordem recente:</strong> todos os itens aparecem do mais recente para o mais antigo.</li>
         </ul>
-        <p>Use a barra lateral para navegar entre as seções. Os botões <strong>Tutorial</strong> e <strong>Equipe</strong> ficam na parte inferior da sidebar.</p>
-        <p style="margin-top:12px; font-style:italic; color:var(--accent);">✦ Dica: na Oficina, você pode criar cards personalizados para qualquer matéria.</p>
+        <p>Dê duplo clique em um card da Oficina para alternar entre "em produção" e "finalizado".</p>
       </div>
     </div>
 
-    <!-- ===== EQUIPE ===== -->
+    <!-- EQUIPE -->
     <div class="panel hidden" data-p="equipe">
       <div class="equipe-box">
         <h2>👥 Equipe do projeto</h2>
@@ -615,26 +592,22 @@
 
 <script>
   (function(){
-    // ===== SIDEBAR NAVEGAÇÃO =====
+    // ===== SIDEBAR =====
     const botoesNav = document.querySelectorAll('#nav-principal button');
     const botoesFooter = document.querySelectorAll('.footer-links button');
     const todosBotoes = [...botoesNav, ...botoesFooter];
     const panels = document.querySelectorAll('.panel');
 
     function switchTo(tabId) {
-      // atualiza botões
       todosBotoes.forEach(b => b.classList.remove('active'));
       const botaoClicado = document.querySelector(`button[data-t="${tabId}"]`);
       if (botaoClicado) botaoClicado.classList.add('active');
-
-      // mostra painel
       panels.forEach(p => p.classList.add('hidden'));
       const painelAlvo = document.querySelector(`.panel[data-p="${tabId}"]`);
       if (painelAlvo) painelAlvo.classList.remove('hidden');
     }
-
     todosBotoes.forEach(btn => {
-      btn.addEventListener('click', function(e) {
+      btn.addEventListener('click', function() {
         const tab = this.dataset.t;
         if (tab) switchTo(tab);
       });
@@ -663,7 +636,6 @@
         pomoProgressoEl.style.strokeDashoffset = (CIRCUNFERENCIA * (1 - fracaoRestante)).toFixed(1);
       }
     }
-
     function pomoTick() {
       if (pomoRestante <= 0) {
         clearInterval(pomoIntervalo);
@@ -676,7 +648,6 @@
       pomoRestante -= 1;
       pomoAtualizarTela();
     }
-
     if (pomoPlayBtn) {
       pomoPlayBtn.addEventListener('click', () => {
         pomoRodando = !pomoRodando;
@@ -704,32 +675,187 @@
     }
     pomoAtualizarTela();
 
-    // ===== OFICINA: ADICIONAR / REMOVER CARDS =====
+    // ===== OFICINA + SINCRONIZAÇÃO =====
     const bancada = document.getElementById('bancadaCards');
     const inputNova = document.getElementById('novaPecaInput');
     const btnAdicionar = document.getElementById('adicionarPecaBtn');
-    const btnRemoverUltimo = document.getElementById('removerUltimaPecaBtn');
+    const btnRemoverConcluidos = document.getElementById('removerConcluidosBtn');
     const contagemEl = document.getElementById('contagemPecas');
     const resumoEl = document.getElementById('resumoStatus');
 
-    let nextId = 6; // já existem 6 estáticos
+    const rotaDiario = document.getElementById('rota-diario');
+    const contagemPortos = document.getElementById('contagem-portos');
+    const msgVazio = document.getElementById('mensagem-vazio');
+    const colecaoHerbario = document.getElementById('colecao-herbario');
+    const rodapeHerbario = document.getElementById('rodape-herbario');
+    const estacoesRadio = document.getElementById('estacoes-radio');
+    const receitasConfeitaria = document.getElementById('receitas-confeitaria');
+    const climaCarga = document.getElementById('clima-carga');
+    const climaDias = document.getElementById('clima-dias');
+    const previsaoHoje = document.getElementById('previsao-hoje');
 
-    function atualizarRodape() {
-      const cards = bancada.querySelectorAll('.peca');
-      const total = cards.length;
-      const finalizados = bancada.querySelectorAll('.peca.pronta').length;
-      contagemEl.textContent = total + ' peças na bancada';
-      const producao = total - finalizados;
-      let resumo = '';
-      if (finalizados > 0) resumo += finalizados + ' finalizada' + (finalizados>1?'s':'') + ' · ';
-      resumo += producao + ' em produção';
-      resumoEl.textContent = resumo;
+    let nextId = 6;
+    let timestampCounter = 6;
+
+    // Horário atual para o diário
+    function getHoraAtual() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      return h + 'h' + m;
     }
 
+    function obterMateriasOrdenadas() {
+      const cards = bancada.querySelectorAll('.peca');
+      const lista = [];
+      cards.forEach(card => {
+        const titulo = card.dataset.titulo || card.querySelector('h3')?.textContent || 'Matéria';
+        const pronta = card.classList.contains('pronta');
+        const timestamp = parseInt(card.dataset.timestamp) || 0;
+        const hora = card.dataset.hora || '07h00';
+        lista.push({ titulo, pronta, timestamp, hora, element: card });
+      });
+      lista.sort((a, b) => b.timestamp - a.timestamp);
+      return lista;
+    }
+
+    function traduzirNome(titulo) {
+      const mapa = {
+        'funções': 'Functio', 'quadráticas': 'quadratica', 'vargas': 'vargensis',
+        'present': 'Praesens', 'perfect': 'perfectum', 'genética': 'Genetica',
+        'mendeliana': 'mendeliana', 'dissertação': 'Dissertatio', 'enem': 'enemensis',
+        'newton': 'Newtonii', 'leis': 'Leges', 'química': 'Chemica',
+        'ligações': 'ligationis', 'física': 'Physica', 'matemática': 'Mathematica',
+        'história': 'Historia', 'inglês': 'Anglicus', 'biologia': 'Biologia',
+        'redação': 'Redactio'
+      };
+      const lower = titulo.toLowerCase();
+      for (let [chave, valor] of Object.entries(mapa)) {
+        if (lower.includes(chave)) return valor;
+      }
+      return titulo.substring(0, 8).toLowerCase() + 'ensis';
+    }
+
+    function reordenarBancada() {
+      const cards = bancada.querySelectorAll('.peca');
+      const lista = Array.from(cards).map(el => ({
+        el,
+        timestamp: parseInt(el.dataset.timestamp) || 0
+      }));
+      lista.sort((a, b) => b.timestamp - a.timestamp);
+      lista.forEach(item => bancada.appendChild(item.el));
+    }
+
+    function sincronizarTudo() {
+      const materias = obterMateriasOrdenadas();
+      const total = materias.length;
+      const finalizadas = materias.filter(m => m.pronta).length;
+
+      // DIÁRIO
+      if (msgVazio) {
+        msgVazio.style.display = total === 0 ? 'block' : 'none';
+      }
+      const portosExistentes = rotaDiario.querySelectorAll('.porto');
+      portosExistentes.forEach(p => p.remove());
+
+      materias.forEach((m, idx) => {
+        const porto = document.createElement('div');
+        porto.className = 'porto' + (m.pronta ? ' feito' : '');
+        const hora = m.hora || '07h00';
+        const nota = m.pronta ? '✅ finalizada' : '⏳ em progresso';
+        porto.innerHTML = `
+          <div class="hora">${hora}</div>
+          <div class="nome">${m.titulo}</div>
+          <div class="nota">${nota}</div>
+        `;
+        rotaDiario.appendChild(porto);
+      });
+      if (contagemPortos) contagemPortos.textContent = total;
+
+      // HERBÁRIO
+      colecaoHerbario.innerHTML = '';
+      materias.forEach((m, idx) => {
+        const div = document.createElement('div');
+        div.className = 'especime' + (m.pronta ? ' colhido' : '');
+        const nomeCient = traduzirNome(m.titulo);
+        const obs = m.pronta ? 'Espécime catalogada e identificada.' : 'Em observação — requer mais estudo.';
+        div.innerHTML = `
+          <div class="num">Nº ${String(idx+31).padStart(3, '0')}</div>
+          <div class="nome">${nomeCient}</div>
+          <div class="obs">${obs}</div>
+        `;
+        colecaoHerbario.appendChild(div);
+      });
+      rodapeHerbario.textContent = materias.filter(m=>m.pronta).length + ' espécimes colhidos · ' + materias.filter(m=>!m.pronta).length + ' em observação';
+
+      // RÁDIO
+      estacoesRadio.innerHTML = '';
+      const freqs = [88.3, 94.1, 101.5, 106.9, 92.5, 98.7];
+      materias.forEach((m, idx) => {
+        const div = document.createElement('div');
+        div.className = 'estacao';
+        const freq = freqs[idx % freqs.length].toFixed(1);
+        const intensidade = m.pronta ? 14 : 6 + Math.floor(Math.random() * 6);
+        const ondas = [intensidade, Math.max(4, intensidade-4), Math.min(16, intensidade+2), Math.max(3, intensidade-6)];
+        div.innerHTML = `
+          <span class="num">${freq}</span>
+          <span class="nome">${m.titulo}</span>
+          <div class="onda">
+            <span style="height:${ondas[0]}px"></span>
+            <span style="height:${ondas[1]}px"></span>
+            <span style="height:${ondas[2]}px"></span>
+            <span style="height:${ondas[3]}px"></span>
+          </div>
+        `;
+        estacoesRadio.appendChild(div);
+      });
+
+      // CONFEITARIA
+      receitasConfeitaria.innerHTML = '';
+      const tempos = ['40 min', '35 min', '25 min', '50 min', '30 min', '45 min'];
+      materias.forEach((m, idx) => {
+        const div = document.createElement('div');
+        div.className = 'receita';
+        const ingred = m.pronta ? '📦 ingredientes preparados' : '🔄 ingredientes em separação';
+        div.innerHTML = `
+          <div class="info">
+            <h3>${m.titulo}</h3>
+            <div class="ingred">${ingred}</div>
+          </div>
+          <div class="tempo">${tempos[idx % tempos.length]}</div>
+        `;
+        receitasConfeitaria.appendChild(div);
+      });
+
+      // CLIMA
+      const pctFinalizadas = total > 0 ? Math.round((finalizadas / total) * 100) : 0;
+      climaCarga.textContent = pctFinalizadas + '%';
+      climaDias.textContent = total > 0 ? Math.min(14, 5 + total) : '0';
+      previsaoHoje.textContent = total + ' tarefas';
+
+      // RODAPÉ OFICINA
+      const totalCards = bancada.querySelectorAll('.peca').length;
+      const finalizadosCards = bancada.querySelectorAll('.peca.pronta').length;
+      contagemEl.textContent = totalCards + ' peças na bancada';
+      const producao = totalCards - finalizadosCards;
+      let resumo = '';
+      if (finalizadosCards > 0) resumo += finalizadosCards + ' finalizada' + (finalizadosCards>1?'s':'') + ' · ';
+      resumo += producao + ' em produção';
+      resumoEl.textContent = resumo;
+
+      reordenarBancada();
+    }
+
+    // ===== ADICIONAR CARD (com horário atual) =====
     function criarCard(titulo, id) {
       const div = document.createElement('div');
       div.className = 'peca';
       div.dataset.id = id;
+      div.dataset.titulo = titulo;
+      const timestamp = timestampCounter++;
+      div.dataset.timestamp = timestamp;
+      const horaAtual = getHoraAtual();
+      div.dataset.hora = horaAtual;
       const codigo = 'PC-' + String(id+1).padStart(2, '0') + ' · ' + titulo.substring(0,3).toUpperCase();
       const pct = Math.floor(Math.random() * 41);
       const pctText = pct + '% em produção';
@@ -740,6 +866,10 @@
         <div class="barra"><i style="width:${larguraBarra}"></i></div>
         <div class="pct">${pctText}</div>
       `;
+      div.addEventListener('dblclick', function() {
+        this.classList.toggle('pronta');
+        sincronizarTudo();
+      });
       return div;
     }
 
@@ -751,34 +881,48 @@
       }
       const id = nextId++;
       const card = criarCard(titulo, id);
-      bancada.appendChild(card);
+      bancada.prepend(card);
       inputNova.value = '';
-      atualizarRodape();
+      sincronizarTudo();
     }
 
-    function removerUltimoCard() {
-      const cards = bancada.querySelectorAll('.peca');
-      if (cards.length <= 6) {
-        alert('Os 6 cards iniciais não podem ser removidos. Adicione novos cards para removê-los.');
+    // ===== REMOVER CONCLUÍDOS =====
+    function removerConcluidos() {
+      const concluidos = bancada.querySelectorAll('.peca.pronta');
+      if (concluidos.length === 0) {
+        alert('Nenhum card concluído para remover.');
         return;
       }
-      const ultimo = cards[cards.length - 1];
-      if (ultimo) bancada.removeChild(ultimo);
-      atualizarRodape();
+      // Mantém apenas os cards iniciais? Vamos remover todos os concluídos, inclusive os iniciais.
+      // Mas vamos garantir que pelo menos um card fique (se todos forem removidos, a bancada fica vazia)
+      const totalCards = bancada.querySelectorAll('.peca').length;
+      if (totalCards === concluidos.length) {
+        alert('Não é possível remover todos os cards. Deixe pelo menos um em produção.');
+        return;
+      }
+      concluidos.forEach(card => card.remove());
+      sincronizarTudo();
     }
 
     if (btnAdicionar) btnAdicionar.addEventListener('click', adicionarCard);
-    if (btnRemoverUltimo) btnRemoverUltimo.addEventListener('click', removerUltimoCard);
+    if (btnRemoverConcluidos) btnRemoverConcluidos.addEventListener('click', removerConcluidos);
     if (inputNova) {
       inputNova.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); adicionarCard(); }
       });
     }
-    atualizarRodape();
 
-    // ===== INICIAL: ativa diário (já ativo) =====
-    // Garantir que o primeiro painel esteja visível
+    // duplo clique nos cards iniciais
+    document.querySelectorAll('.peca').forEach(card => {
+      card.addEventListener('dblclick', function() {
+        this.classList.toggle('pronta');
+        sincronizarTudo();
+      });
+    });
+
+    sincronizarTudo();
     switchTo('diario');
+
   })();
 </script>
 </body>
